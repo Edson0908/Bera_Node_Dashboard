@@ -1,0 +1,25 @@
+Validator homepage
+https://hub.berachain.com/validators/0x96652bba2f2f3b6b4fcfdfe9847f6a5604965d0ebac37c1f0c3774da0866140ab69734feec0eb0761f8e08d809c9e12b/
+
+Validator address
+0x7905E5D80722702b7C1816b3c38b6A893ED809bD
+
+Validator pubkey
+0x96652bba2f2f3b6b4fcfdfe9847f6a5604965d0ebac37c1f0c3774da0866140ab69734feec0eb0761f8e08d809c9e12b
+
+Validator pubkey2
+0x77026b58c8af056356e4711e3418d81f8ce4b1bbe0b410afddec75342f896f10
+
+BGT Contract
+0x656b95E550C07a9ffe548bd4085c72418Ceb1dba
+
+
+
+THJ pubkey
+0xa0c673180d97213c1c35fe3bf4e684dd3534baab235a106d1f71b9c8a37e4d37a056d47546964fd075501dff7f76aeaf
+
+THJ pubkey2
+0x68b58f24be0e7c16df3852402e8475e8b3cc53a64cfaf45da3dbc148cdc05d30
+
+THJ address
+0x73e34207C4d35e6c7Bf7D23B8ADD6975aa8049B7

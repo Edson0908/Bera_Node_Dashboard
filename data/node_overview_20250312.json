@@ -1,0 +1,146 @@
+{
+  "query_id": "4837325",
+  "timestamp": "2025-03-12T12:13:46.827475",
+  "results": [
+    {
+      "Date": "2025-02-13",
+      "cumulative_bera_staked": 10000,
+      "cumulative_bgt_rewards": 0,
+      "daily_bera_staked": 10000,
+      "daily_bgt_rewards": 0
+    },
+    {
+      "Date": "2025-02-21",
+      "cumulative_bera_staked": 624841.23,
+      "cumulative_bgt_rewards": 81.5,
+      "daily_bera_staked": 614841.23,
+      "daily_bgt_rewards": 81.5
+    },
+    {
+      "Date": "2025-02-22",
+      "cumulative_bera_staked": 1873054.351,
+      "cumulative_bgt_rewards": 192,
+      "daily_bera_staked": 1248213.121,
+      "daily_bgt_rewards": 110.5
+    },
+    {
+      "Date": "2025-02-23",
+      "cumulative_bera_staked": 1873054.351,
+      "cumulative_bgt_rewards": 518,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 326
+    },
+    {
+      "Date": "2025-02-24",
+      "cumulative_bera_staked": 1873054.351,
+      "cumulative_bgt_rewards": 840.5,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 322.5
+    },
+    {
+      "Date": "2025-02-25",
+      "cumulative_bera_staked": 1873054.351,
+      "cumulative_bgt_rewards": 1158.5,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 318
+    },
+    {
+      "Date": "2025-02-26",
+      "cumulative_bera_staked": 1873054.351,
+      "cumulative_bgt_rewards": 1472.5,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 314
+    },
+    {
+      "Date": "2025-02-27",
+      "cumulative_bera_staked": 1873054.351,
+      "cumulative_bgt_rewards": 1786.5,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 314
+    },
+    {
+      "Date": "2025-02-28",
+      "cumulative_bera_staked": 1873054.351,
+      "cumulative_bgt_rewards": 2102.5,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 316
+    },
+    {
+      "Date": "2025-03-01",
+      "cumulative_bera_staked": 1873054.351,
+      "cumulative_bgt_rewards": 2413,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 310.5
+    },
+    {
+      "Date": "2025-03-02",
+      "cumulative_bera_staked": 1873054.351,
+      "cumulative_bgt_rewards": 2725,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 312
+    },
+    {
+      "Date": "2025-03-03",
+      "cumulative_bera_staked": 9845964.991,
+      "cumulative_bgt_rewards": 4224.5,
+      "daily_bera_staked": 7972910.64,
+      "daily_bgt_rewards": 1499.5
+    },
+    {
+      "Date": "2025-03-04",
+      "cumulative_bera_staked": 9845964.991,
+      "cumulative_bgt_rewards": 5764.5,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 1540
+    },
+    {
+      "Date": "2025-03-05",
+      "cumulative_bera_staked": 9845964.991,
+      "cumulative_bgt_rewards": 7292.5,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 1528
+    },
+    {
+      "Date": "2025-03-06",
+      "cumulative_bera_staked": 9845964.991,
+      "cumulative_bgt_rewards": 8848.5,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 1556
+    },
+    {
+      "Date": "2025-03-07",
+      "cumulative_bera_staked": 9845964.991,
+      "cumulative_bgt_rewards": 10421.5,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 1573
+    },
+    {
+      "Date": "2025-03-08",
+      "cumulative_bera_staked": 9845964.991,
+      "cumulative_bgt_rewards": 11968,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 1546.5
+    },
+    {
+      "Date": "2025-03-09",
+      "cumulative_bera_staked": 9845964.991,
+      "cumulative_bgt_rewards": 12411,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 443
+    },
+    {
+      "Date": "2025-03-10",
+      "cumulative_bera_staked": 9845964.991,
+      "cumulative_bgt_rewards": 13110,
+      "daily_bera_staked": 0,
+      "daily_bgt_rewards": 699
+    },
+    {
+      "Date": "2025-03-11",
+      "cumulative_bera_staked": 10000000,
+      "cumulative_bgt_rewards": 14344,
+      "daily_bera_staked": 154035.009,
+      "daily_bgt_rewards": 1234
+    }
+  ]
+}
