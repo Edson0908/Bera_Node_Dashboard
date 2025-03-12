@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>节点数据面板</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #0C0C0C;
+            color: #FFFFFF;
+            padding: 20px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+        }
+        .table-container { 
+            margin-top: 20px;
+            background: #151515;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .table {
+            color: #FFFFFF;
+            margin-bottom: 0;
+        }
+        .table > :not(caption) > * > * {
+            background-color: transparent;
+            border-bottom-color: #2D2D2D;
+            padding: 16px;
+        }
+        .table > thead > tr > th {
+            background-color: #151515;
+            color: #808080;
+            font-weight: 500;
+            border-bottom: 1px solid #2D2D2D;
+            padding-top: 12px;
+            padding-bottom: 12px;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.03) !important;
+        }
+        .number-cell { 
+            text-align: right;
+            font-family: 'Inter', monospace;
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: -0.02em;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #FFFFFF;
+        }
+        h3 {
+            font-size: 1rem;
+            color: #808080;
+            margin-bottom: 1.5rem;
+        }
+        .table-striped > tbody > tr:nth-of-type(odd) {
+            background-color: rgba(255, 255, 255, 0.01);
+        }
+        .table-striped > tbody > tr:nth-of-type(even) {
+            background-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>节点数据面板</h1>
+        <div class="table-container">
+            <h3>数据更新时间: {{ timestamp }}</h3>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        {% for header in headers %}
+                        <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr>
+                        {% for key, value in row.items() %}
+                        <td {% if value is number %}class="number-cell"{% endif %}>
+                            {% if value is number %}
+                                {{ "{:,}".format(value) }}
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
