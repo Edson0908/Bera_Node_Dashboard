@@ -21,3 +21,4 @@ ENV/
 Thumbs.db
 
 # 数据文件
+data/
