@@ -74,120 +74,104 @@ def query_dune_data(query_id, query_parameters):
         print(f"发生错误: {str(e)}")
         return None 
 
+def get_commission_rate(amount):
+    config_dir = 'config'
+    config_file = os.path.join(config_dir, 'config.json')
+    with open(config_file, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+    commission_rate = config['commission_rate']
+
+    for key, value in commission_rate.items():
+        if amount < int(key):
+            return value
+    return 0
+
 def init_stake_snapshot():
 
-    total_stake = 0
-    processed_results = {
-        "Stakers": {},
-        "Snapshot": {},
-        "Snapshot2": []
-    }
+
+    processed_data = {}
     saved_file_prefix = "stake_snapshot"
+    
     query_id = os.getenv('QUERY_STAKE_BY_PUBKEY')
     validator_pubkey1 = os.getenv('VALIDATOR_PUBKEY1')
     validator_pubkey2 = os.getenv('VALIDATOR_PUBKEY2')
-
     query_parameters = [
         QueryParameter.text_type(
             name="pubkey1",
             value= validator_pubkey1
         )
     ]
-
     results = query_dune_data(query_id, query_parameters)
-    if results:
-        print("查询结果：")
-        print(json.dumps(results, indent=2, ensure_ascii=False))
+    #print(json.dumps(results, indent=2, ensure_ascii=False))
 
-        prev_amount = 0
-        prev_records = {}
-        index = 0
-        prev_staked = 0
-
-        for item in results:
-            
-            total_stake += item['amount']
-
-            if item['staker'] not in processed_results["Stakers"].keys():
-                processed_results["Stakers"][item['staker']] = {
-                    "Records": []
-                }
-                processed_results["Stakers"][item['staker']]["Total Staked"] = item['amount']
-
-                processed_results["Stakers"][item['staker']]["Records"].append({
-                    "Date": item['date'],
-                    "Amount": item['amount'],
-                    "Block Number": item['blockNumber'],
-                    "Tx Hash": item['txID']
-                })
-            else:
-                processed_results["Stakers"][item['staker']]["Total Staked"] += item['amount']
-                processed_results["Stakers"][item['staker']]["Records"].append({
-                    "Date": item['date'],
-                    "Amount": item['amount'],
-                    "Block Number": item['blockNumber'],
-                    "Tx Hash": item['txID']
-                })
-            prev_records[item['txID']] = item['amount']            
-            processed_results["Snapshot"][item['blockNumber']] = {}
-
-            processed_results["Snapshot"][item['blockNumber']]["Total Staked"] = item['amount'] + prev_amount
-            processed_results["Snapshot"][item['blockNumber']]["Records"] = prev_records
-            
-            prev_amount = processed_results["Snapshot"][item['blockNumber']]["Total Staked"]
-            
-            prev_records = copy.deepcopy(processed_results["Snapshot"][item['blockNumber']]["Records"])
-
-            # ========
-            processed_results["Snapshot2"].append({
+    total_staked = 0
+    for item in results:
+        total_staked += item['amount']
+        if item['staker'] not in processed_data.keys():
+            processed_data[item['staker']] = []
+            processed_data[item['staker']].append({
+                "BERA Staked": item['amount'],
                 "Start Block": item['blockNumber'],
-                "Total Staked": item['amount'] + prev_staked,
-                "Stakers": []
+                "Total Staked": total_staked,
+                "Weight": item['amount']/total_staked
             })
-            prev_staked = processed_results["Snapshot2"][index]["Total Staked"]
-
-            if index < 1:
-                processed_results["Snapshot2"][index]["Stakers"].append({
-                    item['staker']:{
-                        "Amount": item['amount']
-                    }
-                })
-            else:
-                processed_results["Snapshot2"][index]["Stakers"]= copy.deepcopy(processed_results["Snapshot2"][index-1]["Stakers"])
-                
-                found = False
-                for staker in processed_results["Snapshot2"][index]["Stakers"]:
-                    if item['staker'] in staker.keys():
-                        staker[item['staker']]["Amount"] += item['amount']
-                        found = True
-                        break
-                if not found:
-                    processed_results["Snapshot2"][index]["Stakers"].append({
-                        item['staker']: {
-                            "Amount": item['amount']
-                        }
-                    })
-
-                processed_results["Snapshot2"][index-1]["End Block"] = item['blockNumber']
-                bgt_rewards_result = bgt_rewards_snapshot(validator_pubkey2, processed_results["Snapshot2"][index-1]["Start Block"], item['blockNumber'])
-               
-                if bgt_rewards_result[0]['bgt_rewards'] is not None:
-                    processed_results["Snapshot2"][index-1]["BGT Rewards"] = bgt_rewards_result[0]['bgt_rewards']
-                else:
-                    processed_results["Snapshot2"][index-1]["BGT Rewards"] = 0
-            
-            for row in processed_results["Snapshot2"][index]["Stakers"]:
-                for key, value in row.items():
-                    row[key]["Weight"] = value["Amount"] / processed_results["Snapshot2"][index]["Total Staked"]
-                
-            index += 1
-
-
-        print(json.dumps(processed_results, indent=2, ensure_ascii=False))     
-        save_results_to_json(processed_results, saved_file_prefix)
         
-    else:
-        print("未能获取查询结果")
+        else:
+            amount = processed_data[item['staker']][-1]['BERA Staked']
+            processed_data[item['staker']][-1]["End Block"] = item['blockNumber']
+            processed_data[item['staker']].append({
+                "BERA Staked": item['amount'] + amount,
+                "Start Block": item['blockNumber'],
+                "Total Staked": total_staked,
+                "Weight": (item['amount'] + amount)/total_staked
+            })
+        
+        for key, value in processed_data.items():
+            if key != item['staker']:
+                value[-1]['End Block'] = item['blockNumber']
+                amount = value[-1]['BERA Staked']
+                value.append({
+                    "BERA Staked": amount,
+                    "Start Block": item['blockNumber'],
+                    "Total Staked": total_staked,
+                    "Weight": amount/total_staked
+                })
+    
+    keys = list(processed_data.keys())
+    index = 0
+    for index in range(len(keys)):
+        if index == 0:
+            for item in processed_data[keys[index]]:
+                item['Commission Rate'] = get_commission_rate(item['BERA Staked'])
+                if item.get('End Block') is not None:
+                    start_block = item['Start Block']
+                    end_block = item['End Block']
+                    bgt_rewards_result = bgt_rewards_snapshot(validator_pubkey2, start_block, end_block)
+                    if bgt_rewards_result[0]['bgt_rewards'] is not None:
+                        item['Total BGT Rewards'] = bgt_rewards_result[0]['bgt_rewards']
+                        item['Staker BGT Rewards'] = item['Total BGT Rewards'] * item['Weight']
+                        item['Commission'] = item['Staker BGT Rewards'] * item['Commission Rate']
+                        item['BGT Rewards'] = item['Staker BGT Rewards']  * (1 - item['Commission Rate'])
+                    else:
+                        item['Total BGT Rewards'] = 0
+                        item['Staker BGT Rewards'] = 0
+                        item['Commission'] = 0
+                        item['BGT Rewards'] = 0
+        else:
+            for item in processed_data[keys[index]]:
+                item['Commission Rate'] = get_commission_rate(item['BERA Staked'])
+                if item.get('End Block') is not None:
+                    for row in processed_data[keys[index-1]]:
+                        if row.get('Start Block') == item['Start Block']:
+                            item['Total BGT Rewards'] = row['Total BGT Rewards']
+                            item['Staker BGT Rewards'] = item['Total BGT Rewards'] * item['Weight']
+                            item['Commission'] = item['Staker BGT Rewards'] * item['Commission Rate']
+                            item['BGT Rewards'] = item['Staker BGT Rewards']  * (1 - item['Commission Rate'])
+                            break
+
+
+    save_results_to_json(processed_data, saved_file_prefix)
+
 
 def bgt_rewards_snapshot(validator_pubkey, start_block, end_block):
 
@@ -242,7 +226,70 @@ def validator_overview():
     else:
         print("未能获取查询结果")   
 
+
+def get_current_block():
+    query_id = os.getenv('QUERY_CURRENT_BLOCK')
+    results = query_dune_data(query_id, [])
+    if results:
+        print("查询结果：")
+        print(json.dumps(results, indent=2, ensure_ascii=False))
+        return results[0]['currentBlock']
+    else:
+        print("未能获取查询结果")
+        return None
+
+def update_stake_snapshot():
+
+    validator_pubkey2 = os.getenv('VALIDATOR_PUBKEY2')
+
+    current_block = get_current_block()
+
+    """读取最新的 stake_snapshot 文件并更新数据"""
+    # 获取最新的文件
+    data_dir = 'data'
+    json_files = [f for f in os.listdir(data_dir) if f.startswith('stake_snapshot_') and f.endswith('.json')]
+    
+    if not json_files:
+        print("未找到 stake_snapshot 文件，将创建新的数据")
+        return init_stake_snapshot()
+    
+    # 获取最新的文件
+    latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
+    file_path = os.path.join(data_dir, latest_file)
+ 
+    try:
+        # 读取现有数据
+        with open(file_path, 'r', encoding='utf-8') as f:
+            existing_data = json.load(f)
+            print(f"成功读取文件: {file_path}")
+        
+        existing_data = existing_data['results']
+        
+        n = 0
+        bgt_rewards_result = 0
+        for key, value in existing_data.items():
+            value[-1]['Commission Rate'] = get_commission_rate(value[-1]['BERA Staked'])
+            value[-1]['End Block'] = current_block
+            if n == 0:
+                bgt_rewards_result = bgt_rewards_snapshot(validator_pubkey2, value[-1]['Start Block'], current_block)
+            value[-1]['Total BGT Rewards'] = bgt_rewards_result[0]['bgt_rewards']
+            value[-1]['Staker BGT Rewards'] = value[-1]['Total BGT Rewards'] * value[-1]['Weight']             
+            value[-1]['Commission'] = value[-1]['Staker BGT Rewards'] * value[-1]['Commission Rate']
+            value[-1]['BGT Rewards'] = value[-1]['Staker BGT Rewards']  * (1 - value[-1]['Commission Rate'])
+            n += 1
+        # 保存更新后的数据
+        save_results_to_json(existing_data, "stake_snapshot")
+        print("数据已更新并保存")
+        return None
+        
+    except Exception as e:
+        print(f"更新数据时发生错误: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None
+
 if __name__ == "__main__":
 
     init_stake_snapshot()
     #validator_overview()
+    update_stake_snapshot()
