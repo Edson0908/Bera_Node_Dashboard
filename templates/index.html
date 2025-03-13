@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Berachain Validator Dashboard</title>
+    <title>SNZ Validator Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -50,8 +50,19 @@
             padding-top: 12px;
             padding-bottom: 12px;
         }
+        .table-hover tbody tr {
+            transition: all 0.2s ease;
+        }
         .table-hover tbody tr:hover {
-            background-color: rgba(255, 255, 255, 0.03) !important;
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .table-hover tbody tr:hover td {
+            color: #FFFFFF;
+        }
+        .table-hover tbody tr:hover td.number-cell {
+            color: #4CAF50;
         }
         .number-cell { 
             text-align: right;
@@ -59,6 +70,7 @@
             font-weight: 300;
             color: rgba(255, 255, 255, 0.9);
             letter-spacing: -0.02em;
+            transition: color 0.2s ease;
         }
         h1 {
             font-size: 2rem;
@@ -77,11 +89,51 @@
         .table-striped > tbody > tr:nth-of-type(even) {
             background-color: transparent;
         }
+        .pagination-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+        .pagination-info {
+            color: #808080;
+            font-size: 0.9rem;
+        }
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .page-button {
+            background: #202020;
+            border: 1px solid #2D2D2D;
+            color: #FFFFFF;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .page-button:hover:not(:disabled) {
+            background: #303030;
+            border-color: #404040;
+        }
+        .page-button:disabled {
+            background: #151515;
+            border-color: #2D2D2D;
+            color: #505050;
+            cursor: not-allowed;
+        }
+        .page-button.active {
+            background: #404040;
+            border-color: #505050;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Berachain Validator Dashboard</h1>
+        <h1>SNZ Validator Dashboard</h1>
         <div class="chart-container">
             <canvas id="dataChart"></canvas>
         </div>
@@ -95,7 +147,7 @@
                         {% endfor %}
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tableBody">
                     {% for row in data %}
                     <tr>
                         {% for key, value in row.items() %}
@@ -111,6 +163,16 @@
                     {% endfor %}
                 </tbody>
             </table>
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Showing <span id="startIndex">1</span> to <span id="endIndex">10</span> of <span id="totalItems">0</span> entries
+                </div>
+                <div class="pagination-controls">
+                    <button id="prevPage" class="page-button" disabled>Previous</button>
+                    <div id="pageNumbers" style="display: flex; gap: 8px;"></div>
+                    <button id="nextPage" class="page-button">Next</button>
+                </div>
+            </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -208,6 +270,95 @@
                 }
             }
         });
+
+        // 分页功能
+        const itemsPerPage = 8;
+        let currentPage = 1;
+        const tableData = {{ data | tojson }};
+        const totalPages = Math.ceil(tableData.length / itemsPerPage);
+        
+        function updateTable() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, tableData.length);
+            const tableBody = document.getElementById('tableBody');
+            
+            // 定义列顺序
+            const columnOrder = [
+                'Date',
+                'Daily BERA Staked',
+                'Cumulative BERA Staked',
+                'Daily BGT Rewards',
+                'Cumulative BGT Rewards'
+            ];
+            
+            // 更新表格内容
+            tableBody.innerHTML = tableData.slice(startIndex, endIndex).map(row => `
+                <tr>
+                    ${columnOrder.map(key => {
+                        const value = row[key];
+                        return `<td ${typeof value === 'number' ? 'class="number-cell"' : ''}>
+                            ${typeof value === 'number' ? value.toLocaleString() : value}
+                        </td>`;
+                    }).join('')}
+                </tr>
+            `).join('');
+            
+            // 更新分页信息
+            document.getElementById('startIndex').textContent = startIndex + 1;
+            document.getElementById('endIndex').textContent = endIndex;
+            document.getElementById('totalItems').textContent = tableData.length;
+            
+            // 更新按钮状态
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages;
+            
+            // 更新页码按钮
+            updatePageNumbers();
+        }
+        
+        function updatePageNumbers() {
+            const pageNumbers = document.getElementById('pageNumbers');
+            pageNumbers.innerHTML = '';
+            
+            // 计算显示的页码范围
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            
+            // 调整起始页码，确保始终显示5个页码（如果有）
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+            
+            // 生成页码按钮
+            for (let i = startPage; i <= endPage; i++) {
+                const button = document.createElement('button');
+                button.className = `page-button ${i === currentPage ? 'active' : ''}`;
+                button.textContent = i;
+                button.onclick = () => {
+                    currentPage = i;
+                    updateTable();
+                };
+                pageNumbers.appendChild(button);
+            }
+        }
+        
+        // 添加事件监听器
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                updateTable();
+            }
+        });
+        
+        document.getElementById('nextPage').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateTable();
+            }
+        });
+        
+        // 初始化表格
+        updateTable();
     </script>
 </body>
 </html> 
