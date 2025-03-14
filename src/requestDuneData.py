@@ -12,7 +12,7 @@ import copy
 dotenv.load_dotenv(override=True)
 
 DUNE_API_KEY = os.getenv('DUNE_API_KEY')
-
+DEBUG_MODE = os.getenv('DEBUG_MODE')
 
 def save_results_to_json(results, file_prefix):
     """将结果保存到JSON文件"""
@@ -46,13 +46,17 @@ def query_dune_data(query_id, query_parameters):
             params=query_parameters
         )
 
+        if DEBUG_MODE:
+            results = dune.get_latest_result(query_id)
+            return results.result.rows
+
         # 执行查询
         print("开始执行查询...")
         execution_response = dune.execute_query(query=query)
         execution_id = execution_response.execution_id
         
         # 等待结果
-        max_attempts = 60  # 最多等待60秒
+        max_attempts = 100  # 最多等待60秒
         attempt = 0
         
         while attempt < max_attempts:
@@ -74,20 +78,26 @@ def query_dune_data(query_id, query_parameters):
         print(f"发生错误: {str(e)}")
         return None 
 
-def get_commission_rate(amount):
+def get_commission_rate(staker, amount):
     config_dir = 'config'
     config_file = os.path.join(config_dir, 'config.json')
     with open(config_file, 'r', encoding='utf-8') as f:
         config = json.load(f)
     commission_rate = config['commission_rate']
-
-    for key, value in commission_rate.items():
-        if amount < int(key):
-            return value
+    staker_info = config['staker_info']
+    if staker_info[staker]['commission']:
+        for key, value in commission_rate.items():
+            if amount < int(key):
+                return value
     return 0
 
 def init_stake_snapshot():
 
+    config_dir = 'config'
+    config_file = os.path.join(config_dir, 'config.json')
+    with open(config_file, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+    staker_info = config['staker_info']
 
     processed_data = {}
     saved_file_prefix = "stake_snapshot"
@@ -108,8 +118,9 @@ def init_stake_snapshot():
     for item in results:
         total_staked += item['amount']
         if item['staker'] not in processed_data.keys():
-            processed_data[item['staker']] = []
-            processed_data[item['staker']].append({
+            processed_data[item['staker']] = {'Records': []}
+            processed_data[item['staker']]['name'] = staker_info[item['staker']]['name']
+            processed_data[item['staker']]['Records'].append({
                 "BERA Staked": item['amount'],
                 "Start Block": item['blockNumber'],
                 "Total Staked": total_staked,
@@ -117,9 +128,9 @@ def init_stake_snapshot():
             })
         
         else:
-            amount = processed_data[item['staker']][-1]['BERA Staked']
-            processed_data[item['staker']][-1]["End Block"] = item['blockNumber']
-            processed_data[item['staker']].append({
+            amount = processed_data[item['staker']]['Records'][-1]['BERA Staked']
+            processed_data[item['staker']]['Records'][-1]["End Block"] = item['blockNumber']
+            processed_data[item['staker']]['Records'].append({
                 "BERA Staked": item['amount'] + amount,
                 "Start Block": item['blockNumber'],
                 "Total Staked": total_staked,
@@ -128,9 +139,9 @@ def init_stake_snapshot():
         
         for key, value in processed_data.items():
             if key != item['staker']:
-                value[-1]['End Block'] = item['blockNumber']
-                amount = value[-1]['BERA Staked']
-                value.append({
+                value['Records'][-1]['End Block'] = item['blockNumber']
+                amount = value['Records'][-1]['BERA Staked']
+                value['Records'].append({
                     "BERA Staked": amount,
                     "Start Block": item['blockNumber'],
                     "Total Staked": total_staked,
@@ -141,8 +152,8 @@ def init_stake_snapshot():
     index = 0
     for index in range(len(keys)):
         if index == 0:
-            for item in processed_data[keys[index]]:
-                item['Commission Rate'] = get_commission_rate(item['BERA Staked'])
+            for item in processed_data[keys[index]]['Records']:
+                item['Commission Rate'] = get_commission_rate(keys[index], item['BERA Staked'])
                 if item.get('End Block') is not None:
                     start_block = item['Start Block']
                     end_block = item['End Block']
@@ -158,10 +169,10 @@ def init_stake_snapshot():
                         item['Commission'] = 0
                         item['BGT Rewards'] = 0
         else:
-            for item in processed_data[keys[index]]:
-                item['Commission Rate'] = get_commission_rate(item['BERA Staked'])
+            for item in processed_data[keys[index]]['Records']:
+                item['Commission Rate'] = get_commission_rate(keys[index], item['BERA Staked'])
                 if item.get('End Block') is not None:
-                    for row in processed_data[keys[index-1]]:
+                    for row in processed_data[keys[index-1]]['Records']:
                         if row.get('Start Block') == item['Start Block']:
                             item['Total BGT Rewards'] = row['Total BGT Rewards']
                             item['Staker BGT Rewards'] = item['Total BGT Rewards'] * item['Weight']
@@ -171,7 +182,6 @@ def init_stake_snapshot():
 
 
     save_results_to_json(processed_data, saved_file_prefix)
-
 
 def bgt_rewards_snapshot(validator_pubkey, start_block, end_block):
 
@@ -268,14 +278,14 @@ def update_stake_snapshot():
         n = 0
         bgt_rewards_result = 0
         for key, value in existing_data.items():
-            value[-1]['Commission Rate'] = get_commission_rate(value[-1]['BERA Staked'])
-            value[-1]['End Block'] = current_block
+            value['Records'][-1]['Commission Rate'] = get_commission_rate(key,value['Records'][-1]['BERA Staked'])
+            value['Records'][-1]['End Block'] = current_block
             if n == 0:
-                bgt_rewards_result = bgt_rewards_snapshot(validator_pubkey2, value[-1]['Start Block'], current_block)
-            value[-1]['Total BGT Rewards'] = bgt_rewards_result[0]['bgt_rewards']
-            value[-1]['Staker BGT Rewards'] = value[-1]['Total BGT Rewards'] * value[-1]['Weight']             
-            value[-1]['Commission'] = value[-1]['Staker BGT Rewards'] * value[-1]['Commission Rate']
-            value[-1]['BGT Rewards'] = value[-1]['Staker BGT Rewards']  * (1 - value[-1]['Commission Rate'])
+                bgt_rewards_result = bgt_rewards_snapshot(validator_pubkey2, value['Records'][-1]['Start Block'], current_block)
+            value['Records'][-1]['Total BGT Rewards'] = bgt_rewards_result[0]['bgt_rewards']
+            value['Records'][-1]['Staker BGT Rewards'] = value['Records'][-1]['Total BGT Rewards'] * value['Records'][-1]['Weight']             
+            value['Records'][-1]['Commission'] = value['Records'][-1]['Staker BGT Rewards'] * value['Records'][-1]['Commission Rate']
+            value['Records'][-1]['BGT Rewards'] = value['Records'][-1]['Staker BGT Rewards']  * (1 - value['Records'][-1]['Commission Rate'])
             n += 1
         # 保存更新后的数据
         save_results_to_json(existing_data, "stake_snapshot")
@@ -287,6 +297,13 @@ def update_stake_snapshot():
         import traceback
         traceback.print_exc()
         return None
+
+
+def calculate_honey_rewards():
+    pass
+
+def calculate_bgt_booste():
+    pass
 
 if __name__ == "__main__":
 

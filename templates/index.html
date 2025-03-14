@@ -180,11 +180,12 @@
                 <h3 class="mb-0">BGT Rewards</h3>
                 <div class="dropdown">
                     <button class="page-button dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                        选择 Staker
+                        Select
                     </button>
                     <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
                         {% for staker in stakeSnapshotData.keys() %}
-                        <li><a class="dropdown-item" href="#" data-staker="{{ staker }}">{{ staker }}</a></li>
+                            {% set display_name = stakeSnapshotData[staker]['name'] + ' - ' + staker %}
+                            <li><a class="dropdown-item" href="#" data-staker="{{ staker }}">{{ display_name }}</a></li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -199,7 +200,7 @@
                 </thead>
                 <tbody id="stakerTableBody">
                     {% for staker, data in stakeSnapshotData.items() %}
-                        {% for row in data %}
+                        {% for row in data['Records'] %}
                         <tr data-staker="{{ staker }}" style="display: none;">
                             {% for key in stakeSnapshotHeaders %}
                             <td {% if row[key] is number %}class="number-cell"{% endif %}>
@@ -429,7 +430,7 @@
         });
 
         // 设置下拉菜单的初始文本
-        document.getElementById('dropdownMenuButton').textContent = '请选择 Staker';
+        document.getElementById('dropdownMenuButton').textContent = 'Select';
     </script>
 </body>
 </html> 
