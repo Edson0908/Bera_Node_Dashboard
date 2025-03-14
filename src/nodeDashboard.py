@@ -56,12 +56,17 @@ def get_latest_data():
     
     returnData['stakeSnapshotData'] = data
 
-    print(json.dumps(returnData, indent=2, ensure_ascii=False))
+    #print(json.dumps(returnData, indent=2, ensure_ascii=False))
     
     return returnData, data.get('timestamp')
 
 @app.route('/')
 def index():
+
+    config_dir = 'config'
+    config_file = os.path.join(config_dir, 'config.json')
+    with open(config_file, 'r', encoding='utf-8') as f:
+        config = json.load(f)
 
     #requestDuneData.update_stake_snapshot()
 
@@ -72,15 +77,13 @@ def index():
         return "没有找到数据文件", 404
     
     # 获取表头（现在已经按照指定顺序）
-    headers = [
-        'Date',
-        'Daily BERA Staked',
-        'Cumulative BERA Staked',
-        'Daily BGT Rewards',
-        'Cumulative BGT Rewards'
-    ]
+    headers = config['page_config']['overview_header']
+    stakeSnapshotHeaders = config['page_config']['stake_snapshot_header']
 
     overviewData = data['overviewData']
+    stakeSnapshotData = data['stakeSnapshotData']['results']
+    print(json.dumps(stakeSnapshotData, indent=2, ensure_ascii=False))
+  
     
     # 格式化时间戳
     formatted_time = datetime.fromisoformat(timestamp).strftime('%Y-%m-%d %H:%M:%S')
@@ -88,6 +91,8 @@ def index():
     return render_template('index.html', 
                          data=overviewData,
                          headers=headers,
+                         stakeSnapshotHeaders=stakeSnapshotHeaders,
+                         stakeSnapshotData=stakeSnapshotData,
                          timestamp=formatted_time)
 
 if __name__ == '__main__':

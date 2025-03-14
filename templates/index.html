@@ -49,6 +49,7 @@
             border-bottom: 1px solid #2D2D2D;
             padding-top: 12px;
             padding-bottom: 12px;
+            text-align: center;
         }
         .table-hover tbody tr {
             transition: all 0.2s ease;
@@ -143,7 +144,7 @@
                 <thead>
                     <tr>
                         {% for header in headers %}
-                        <th>{{ header }}</th>
+                        <th class="text-center">{{ header }}</th>
                         {% endfor %}
                     </tr>
                 </thead>
@@ -173,6 +174,53 @@
                     <button id="nextPage" class="page-button">Next</button>
                 </div>
             </div>
+        </div>
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">BGT Rewards</h3>
+                <div class="dropdown">
+                    <button class="page-button dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        选择 Staker
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
+                        {% for staker in stakeSnapshotData.keys() %}
+                        <li><a class="dropdown-item" href="#" data-staker="{{ staker }}">{{ staker }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        {% for header in stakeSnapshotHeaders %}
+                        <th class="text-center">{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody id="stakerTableBody">
+                    {% for staker, data in stakeSnapshotData.items() %}
+                        {% for row in data %}
+                        <tr data-staker="{{ staker }}" style="display: none;">
+                            {% for key in stakeSnapshotHeaders %}
+                            <td {% if row[key] is number %}class="number-cell"{% endif %}>
+                                {% if row[key] is number %}
+                                    {% if key in ['Weight', 'Commission Rate'] %}
+                                        {{ "{:.2%}".format(row[key]) }}
+                                    {% elif row[key] % 1 == 0 %}
+                                        {{ "{:,}".format(row[key]) }}
+                                    {% else %}
+                                        {{ "{:,.4f}".format(row[key]).rstrip('0').rstrip('.') }}
+                                    {% endif %}
+                                {% else %}
+                                    {{ row[key] }}
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -359,6 +407,29 @@
         
         // 初始化表格
         updateTable();
+
+        // 处理 Staker 下拉菜单选择
+        document.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const staker = this.getAttribute('data-staker');
+                const stakerName = this.textContent;
+                
+                // 更新按钮文本
+                document.getElementById('dropdownMenuButton').textContent = stakerName;
+                
+                // 获取所有行
+                const rows = document.querySelectorAll('#stakerTableBody tr');
+                
+                // 显示或隐藏行
+                rows.forEach(row => {
+                    row.style.display = (row.getAttribute('data-staker') === staker) ? '' : 'none';
+                });
+            });
+        });
+
+        // 设置下拉菜单的初始文本
+        document.getElementById('dropdownMenuButton').textContent = '请选择 Staker';
     </script>
 </body>
 </html> 

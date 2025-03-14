@@ -4,5 +4,25 @@
     "500000": 0.02,
     "1000000": 0.01,
     "5000000": 0.005
+  },
+  "page_config": {
+    "overview_header": [
+      "Date",
+      "Daily BERA Staked",
+      "Cumulative BERA Staked",
+      "Daily BGT Rewards",
+      "Cumulative BGT Rewards"
+    ],
+    "stake_snapshot_header": [
+      "Start Block",
+      "End Block",
+      "Total Staked",
+      "BERA Staked",
+      "Weight",
+      "Commission Rate",
+      "Total BGT Rewards",
+      "Commission",
+      "BGT Rewards"
+    ]
   }
 }
