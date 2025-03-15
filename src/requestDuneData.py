@@ -46,7 +46,7 @@ def query_dune_data(query_id, query_parameters):
             params=query_parameters
         )
 
-        if DEBUG_MODE:
+        if DEBUG_MODE == 'True':
             results = dune.get_latest_result(query_id)
             return results.result.rows
 
