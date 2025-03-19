@@ -10,6 +10,7 @@ import logging
 from datetime import datetime
 import signal
 from requestDuneData import init_stake_snapshot
+from nodeOperation import claim_honey_rewards
 
 # 创建日志目录
 os.makedirs('logs', exist_ok=True)
@@ -341,11 +342,17 @@ class BeraWebSocketListener:
             
             # 异步调用init_stake_snapshot
             try:
-                loop = asyncio.get_event_loop()
-                await loop.run_in_executor(None, init_stake_snapshot)
+                await asyncio.to_thread(init_stake_snapshot, new_staker=True)
                 logger.info("成功更新质押快照")
             except Exception as e:
                 logger.error(f"更新质押快照时出错: {str(e)}")
+            
+            # 异步调用claim_honey_rewards
+            try:
+                await asyncio.to_thread(claim_honey_rewards)
+                logger.info("成功领取HONEY奖励")
+            except Exception as e:
+                logger.error(f"领取HONEY奖励时出错: {str(e)}")
             
         except Exception as e:
             logger.error(f"处理事件时出错: {str(e)}")

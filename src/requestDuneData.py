@@ -6,13 +6,22 @@ from datetime import datetime
 from dune_client.types import QueryParameter
 from dune_client.client import DuneClient
 from dune_client.query import QueryBase
-import copy
+from nodeOperation import get_current_block, get_unclaimed_honey_rewards
 
 # 加载环境变量
 dotenv.load_dotenv(override=True)
 
 DUNE_API_KEY = os.getenv('DUNE_API_KEY')
 DEBUG_MODE = os.getenv('DEBUG_MODE')
+BERA_RPC_URL = os.getenv('BERA_RPC_URL')
+
+def load_config():
+    config_dir = 'config'
+    config_file = os.path.join(config_dir, 'config.json')
+    with open(config_file, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+    return config
+
 
 def save_results_to_json(results, file_prefix):
     """将结果保存到JSON文件"""
@@ -79,10 +88,8 @@ def query_dune_data(query_id, query_parameters):
         return None 
 
 def get_commission_rate(staker, amount):
-    config_dir = 'config'
-    config_file = os.path.join(config_dir, 'config.json')
-    with open(config_file, 'r', encoding='utf-8') as f:
-        config = json.load(f)
+    config = load_config()
+
     commission_rate = config['commission_rate']
     staker_info = config['staker_info']
     if staker_info[staker]['commission']:
@@ -93,18 +100,16 @@ def get_commission_rate(staker, amount):
 
 def init_stake_snapshot():
 
-    config_dir = 'config'
-    config_file = os.path.join(config_dir, 'config.json')
-    with open(config_file, 'r', encoding='utf-8') as f:
-        config = json.load(f)
+    config = load_config()
+
     staker_info = config['staker_info']
 
     processed_data = {}
     saved_file_prefix = "stake_snapshot"
     
     query_id = os.getenv('QUERY_STAKE_BY_PUBKEY')
-    validator_pubkey1 = os.getenv('VALIDATOR_PUBKEY1')
-    validator_pubkey2 = os.getenv('VALIDATOR_PUBKEY2')
+    validator_pubkey1 = config['nodeInfo']['private_key1']
+    validator_pubkey2 = config['nodeInfo']['private_key2']
     query_parameters = [
         QueryParameter.text_type(
             name="pubkey1",
@@ -213,10 +218,12 @@ def bgt_rewards_snapshot(validator_pubkey, start_block, end_block):
 
 
 def validator_overview():
+
+    config = load_config()
     saved_file_prefix = "validator_overview"
     query_id = os.getenv('QUERY_VALIDATOR_OVERVIEW')
-    validator_pubkey1 = os.getenv('VALIDATOR_PUBKEY1')
-    validator_pubkey2 = os.getenv('VALIDATOR_PUBKEY2')
+    validator_pubkey1 = config['nodeInfo']['private_key1']
+    validator_pubkey2 = config['nodeInfo']['private_key2']
     query_parameters = [
         QueryParameter.text_type(
             name="pubkey1",
@@ -237,37 +244,28 @@ def validator_overview():
         print("未能获取查询结果")   
 
 
-def get_current_block():
-    query_id = os.getenv('QUERY_CURRENT_BLOCK')
-    results = query_dune_data(query_id, [])
-    if results:
-        print("查询结果：")
-        print(json.dumps(results, indent=2, ensure_ascii=False))
-        return results[0]['currentBlock']
-    else:
-        print("未能获取查询结果")
-        return None
 
-def update_stake_snapshot():
+def update_stake_snapshot(new_staker=False):
 
-    validator_pubkey2 = os.getenv('VALIDATOR_PUBKEY2')
+    config = load_config()
+    validator_pubkey2 = config['nodeInfo']['private_key2']
 
     current_block = get_current_block()
 
-    """读取最新的 stake_snapshot 文件并更新数据"""
-    # 获取最新的文件
-    data_dir = 'data'
-    json_files = [f for f in os.listdir(data_dir) if f.startswith('stake_snapshot_') and f.endswith('.json')]
-    
-    if not json_files:
-        print("未找到 stake_snapshot 文件，将创建新的数据")
-        return init_stake_snapshot()
-    
-    # 获取最新的文件
-    latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
-    file_path = os.path.join(data_dir, latest_file)
+    saved_file_prefix = "stake_snapshot"
+
  
     try:
+        if new_staker:
+            init_stake_snapshot()
+
+        """读取最新的 stake_snapshot 文件并更新数据"""
+        # 获取最新的文件
+        data_dir = 'data'
+        json_files = [f for f in os.listdir(data_dir) if f.startswith(saved_file_prefix) and f.endswith('.json')]
+    
+        latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
+        file_path = os.path.join(data_dir, latest_file)
         # 读取现有数据
         with open(file_path, 'r', encoding='utf-8') as f:
             existing_data = json.load(f)
@@ -288,7 +286,7 @@ def update_stake_snapshot():
             value['Records'][-1]['BGT Rewards'] = value['Records'][-1]['Staker BGT Rewards']  * (1 - value['Records'][-1]['Commission Rate'])
             n += 1
         # 保存更新后的数据
-        save_results_to_json(existing_data, "stake_snapshot")
+        save_results_to_json(existing_data, saved_file_prefix)
         print("数据已更新并保存")
         return None
         
@@ -299,14 +297,98 @@ def update_stake_snapshot():
         return None
 
 
-def calculate_honey_rewards():
-    pass
+def calculate_honey_rewards(data):
 
-def calculate_bgt_booste():
-    pass
+    saved_file_prefix = "honey_rewards"
+
+    data_dir = 'data'
+    json_files = [f for f in os.listdir(data_dir) if f.startswith(saved_file_prefix) and f.endswith('.json')]
+    if json_files:
+        latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
+        file_path = os.path.join(data_dir, latest_file)
+        # 读取现有数据
+        with open(file_path, 'r', encoding='utf-8') as f:
+            existing_data = json.load(f)
+            print(f"成功读取文件: {file_path}")
+            existing_data = existing_data['results']
+    else:
+        existing_data={}
+
+    total_bgt_boosted = 0
+
+    for key, value in data.items():
+
+        total_bgt_rewards = 0
+        for item in value['Records']:
+            total_bgt_rewards += item['Staker BGT Rewards']
+        bgt_distributed = get_bgt_distributed(key)
+        bgt_boosted = total_bgt_rewards - bgt_distributed
+        total_bgt_boosted += bgt_boosted
+
+        last_record = value['Records'][-1]
+        
+        if key not in existing_data.keys():
+            existing_data[key] = {}
+            existing_data[key]['Rewards'] = []
+            start_block = last_record['Start Block']
+            end_block = last_record['End Block']
+            existing_data[key]['Rewards'].append({
+                "Start Block": start_block,
+                "End Block": end_block
+            })
+        else:
+            if existing_data[key]['Rewards'][-1]['Start Block'] == last_record['Start Block']:
+                start_block = existing_data[key]['Rewards'][-1]['Start Block']
+                end_block = last_record['End Block']
+                existing_data[key]['Rewards'][-1]['End Block'] = end_block
+            else:
+                start_block = last_record['Start Block']
+                end_block = last_record['End Block']
+                existing_data[key]['Rewards'].append({
+                    "Start Block": start_block,
+                    "End Block": end_block
+                })
+        
+        existing_data[key]['Rewards'][-1]['BGT Boosted'] = bgt_boosted
+        total_honey_reward = get_total_honey_reward(last_record['Start Block'])
+
+
+     # 保存更新后的数据
+    save_results_to_json(existing_data, saved_file_prefix)
+    print("数据已更新并保存")
+    return None
+
+def get_total_honey_reward(start_bolck):
+
+    unclaimed_honey_rewards = get_unclaimed_honey_rewards()
+    
+    claimed_honey_rewards = 0 # 需要从dune获取, 大于start_block的honey_rewards，并去掉第一条记录
+
+    return unclaimed_honey_rewards + claimed_honey_rewards
+
+def get_bgt_distributed(address):
+
+    return 0
+
+def test():
+    
+    data_dir = 'data'
+    json_files = [f for f in os.listdir(data_dir) if f.startswith('stake_snapshot_') and f.endswith('.json')]
+    
+    latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
+    file_path = os.path.join(data_dir, latest_file)
+    # 读取现有数据
+    with open(file_path, 'r', encoding='utf-8') as f:
+        existing_data = json.load(f)
+        print(f"成功读取文件: {file_path}")
+        
+    existing_data = existing_data['results']
+
+    calculate_honey_rewards(existing_data)
 
 if __name__ == "__main__":
 
     init_stake_snapshot()
     #validator_overview()
-    update_stake_snapshot()
+    #update_stake_snapshot()
+    #test()
