@@ -27,8 +27,8 @@
   },
   "nodeInfo": {
     "operator_address": "0x7905E5D80722702b7C1816b3c38b6A893ED809bD",
-    "private_key1": "0x96652bba2f2f3b6b4fcfdfe9847f6a5604965d0ebac37c1f0c3774da0866140ab69734feec0eb0761f8e08d809c9e12b",
-    "private_key2": "0x77026b58c8af056356e4711e3418d81f8ce4b1bbe0b410afddec75342f896f10"
+    "pubkey1": "0x96652bba2f2f3b6b4fcfdfe9847f6a5604965d0ebac37c1f0c3774da0866140ab69734feec0eb0761f8e08d809c9e12b",
+    "pubkey2": "0x77026b58c8af056356e4711e3418d81f8ce4b1bbe0b410afddec75342f896f10"
   },
   "staker_info": {
     "0x73e34207c4d35e6c7bf7d23b8add6975aa8049b7": {

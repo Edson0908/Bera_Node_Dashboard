@@ -108,8 +108,8 @@ def init_stake_snapshot():
     saved_file_prefix = "stake_snapshot"
     
     query_id = os.getenv('QUERY_STAKE_BY_PUBKEY')
-    validator_pubkey1 = config['nodeInfo']['private_key1']
-    validator_pubkey2 = config['nodeInfo']['private_key2']
+    validator_pubkey1 = config['nodeInfo']['pubkey1']
+    validator_pubkey2 = config['nodeInfo']['pubkey2']
     query_parameters = [
         QueryParameter.text_type(
             name="pubkey1",
@@ -222,8 +222,8 @@ def validator_overview():
     config = load_config()
     saved_file_prefix = "validator_overview"
     query_id = os.getenv('QUERY_VALIDATOR_OVERVIEW')
-    validator_pubkey1 = config['nodeInfo']['private_key1']
-    validator_pubkey2 = config['nodeInfo']['private_key2']
+    validator_pubkey1 = config['nodeInfo']['pubkey1']
+    validator_pubkey2 = config['nodeInfo']['pubkey2']
     query_parameters = [
         QueryParameter.text_type(
             name="pubkey1",
@@ -245,19 +245,25 @@ def validator_overview():
 
 
 
-def update_stake_snapshot(new_staker=False):
+def update_stake_snapshot(txId):
 
     config = load_config()
-    validator_pubkey2 = config['nodeInfo']['private_key2']
 
-    current_block = get_current_block()
+    validator_pubkey2 = config['nodeInfo']['pubkey2']
 
     saved_file_prefix = "stake_snapshot"
 
- 
     try:
-        if new_staker:
-            init_stake_snapshot()
+        query_id = os.getenv('QUERY_STAKE_BY_TXID')
+        query_parameters = [
+            QueryParameter.text_type(
+                name="txid",
+                value= txId
+            )
+        ]
+
+        results = query_dune_data(query_id, query_parameters)
+        new_stake = results[0]
 
         """读取最新的 stake_snapshot 文件并更新数据"""
         # 获取最新的文件
@@ -272,19 +278,63 @@ def update_stake_snapshot(new_staker=False):
             print(f"成功读取文件: {file_path}")
         
         existing_data = existing_data['results']
-        
-        n = 0
-        bgt_rewards_result = 0
-        for key, value in existing_data.items():
-            value['Records'][-1]['Commission Rate'] = get_commission_rate(key,value['Records'][-1]['BERA Staked'])
-            value['Records'][-1]['End Block'] = current_block
-            if n == 0:
-                bgt_rewards_result = bgt_rewards_snapshot(validator_pubkey2, value['Records'][-1]['Start Block'], current_block)
-            value['Records'][-1]['Total BGT Rewards'] = bgt_rewards_result[0]['bgt_rewards']
-            value['Records'][-1]['Staker BGT Rewards'] = value['Records'][-1]['Total BGT Rewards'] * value['Records'][-1]['Weight']             
-            value['Records'][-1]['Commission'] = value['Records'][-1]['Staker BGT Rewards'] * value['Records'][-1]['Commission Rate']
-            value['Records'][-1]['BGT Rewards'] = value['Records'][-1]['Staker BGT Rewards']  * (1 - value['Records'][-1]['Commission Rate'])
-            n += 1
+
+        bgt_rewards = 0
+
+        if new_stake['staker'] in existing_data.keys():
+            for key,value in existing_data.items():
+                if key == new_stake['staker']:
+                    bera_staked = value['Records'][-1]['BERA Staked'] + new_stake['amount']
+                else:
+                    bera_staked = value['Records'][-1]['BERA Staked']
+                start_block = value['Records'][-1]['Start Block']
+                total_staked = value['Records'][-1]['Total Staked'] + new_stake['amount']
+                weight = bera_staked / total_staked
+                if bgt_rewards == 0:
+                    bgt_rewards = bgt_rewards_snapshot(validator_pubkey2, start_block, new_stake['blockNumber'])
+                value['Records'][-1]['End Block'] = new_stake['blockNumber']
+                value['Records'][-1]['Total BGT Rewards'] = bgt_rewards
+                value['Records'][-1]['Staker BGT Rewards'] = value['Records'][-1]['Total BGT Rewards'] * value['Records'][-1]['Weight']
+                value['Records'][-1]['Commission'] = value['Records'][-1]['Staker BGT Rewards'] * value['Records'][-1]['Commission Rate']
+                value['Records'][-1]['BGT Rewards'] = value['Records'][-1]['Staker BGT Rewards'] - value['Records'][-1]['Commission']
+                value['Records'].append({
+                    "BERA Staked": bera_staked,
+                    "Start Block": new_stake['blockNumber'],
+                    "Total Staked": total_staked,
+                    "Weight": weight,
+                    "Commission Rate": get_commission_rate(key, bera_staked)
+                })       
+        else:
+            for key,value in existing_data.items():
+                start_block = value['Records'][-1]['Start Block']
+                bera_staked = value['Records'][-1]['BERA Staked']
+                total_staked = value['Records'][-1]['Total Staked'] + new_stake['amount']
+                weight = bera_staked / total_staked
+                if bgt_rewards == 0:
+                    bgt_rewards = bgt_rewards_snapshot(validator_pubkey2, start_block, new_stake['blockNumber'])
+                value['Records'][-1]['End Block'] = new_stake['blockNumber']
+                value['Records'][-1]['Total BGT Rewards'] = bgt_rewards
+                value['Records'][-1]['Staker BGT Rewards'] = value['Records'][-1]['Total BGT Rewards'] * value['Records'][-1]['Weight']
+                value['Records'][-1]['Commission'] = value['Records'][-1]['Staker BGT Rewards'] * value['Records'][-1]['Commission Rate']
+                value['Records'][-1]['BGT Rewards'] = value['Records'][-1]['Staker BGT Rewards'] - value['Records'][-1]['Commission']
+                value['Records'].append({
+                    "BERA Staked": bera_staked,
+                    "Start Block": new_stake['blockNumber'],
+                    "Total Staked": total_staked,
+                    "Weight": weight,
+                    "Commission Rate": get_commission_rate(key, bera_staked)
+                })
+
+            existing_data[new_stake['staker']] = {}
+            existing_data[new_stake['staker']]['Records'] = []
+            existing_data[new_stake['staker']]['Records'].append({
+                "BERA Staked": new_stake['amount'],
+                "Start Block": new_stake['blockNumber'],
+                "Total Staked": total_staked,
+                "Weight": new_stake['amount'] / total_staked,
+                "Commission Rate": get_commission_rate(new_stake['staker'], new_stake['amount'])
+            })
+
         # 保存更新后的数据
         save_results_to_json(existing_data, saved_file_prefix)
         print("数据已更新并保存")

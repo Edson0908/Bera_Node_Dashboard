@@ -1,0 +1,212 @@
+2025-03-19 17:40:26,702 - INFO - 已添加对地址 0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89 的RewardPaid事件监听
+2025-03-19 17:40:27,935 - INFO - 成功连接到Berachain WebSocket
+2025-03-19 17:40:28,278 - INFO - 开始监听事件 RewardPaid
+2025-03-19 17:41:58,519 - ERROR - 解码事件数据时出错: 'transactionIndex'
+2025-03-19 17:41:58,521 - ERROR - 解码事件数据时出错: 'transactionIndex'
+2025-03-19 17:41:58,522 - INFO - 事件数据已保存到文件: data/events/bgt_rewards_20250319.json
+2025-03-19 17:41:58,522 - ERROR - 更新质押快照时出错: name 'update_stake_snapshot' is not defined
+2025-03-19 17:45:51,875 - ERROR - 解码事件数据时出错: 'transactionIndex'
+2025-03-19 17:45:51,890 - ERROR - 解码事件数据时出错: 'transactionIndex'
+2025-03-19 17:45:51,903 - INFO - 事件数据已保存到文件: data/events/bgt_rewards_20250319.json
+2025-03-19 17:45:51,903 - ERROR - 更新质押快照时出错: name 'update_stake_snapshot' is not defined
+2025-03-19 17:45:53,909 - ERROR - 解码事件数据时出错: 'transactionIndex'
+2025-03-19 17:45:53,912 - ERROR - 解码事件数据时出错: 'transactionIndex'
+2025-03-19 17:45:53,915 - INFO - 事件数据已保存到文件: data/events/bgt_rewards_20250319.json
+2025-03-19 17:45:53,915 - ERROR - 更新质押快照时出错: name 'update_stake_snapshot' is not defined
+2025-03-19 17:47:10,987 - ERROR - 解码事件数据时出错: 'transactionIndex'
+2025-03-19 17:47:10,989 - ERROR - 解码事件数据时出错: 'transactionIndex'
+2025-03-19 17:47:10,993 - INFO - 事件数据已保存到文件: data/events/bgt_rewards_20250319.json
+2025-03-19 17:47:10,993 - ERROR - 更新质押快照时出错: name 'update_stake_snapshot' is not defined
+2025-03-19 17:47:41,206 - INFO - 接收到信号 2，准备关闭...
+2025-03-19 17:47:42,518 - INFO - 程序已终止
+2025-03-19 18:02:53,768 - DEBUG - Using selector: KqueueSelector
+2025-03-19 18:02:53,773 - INFO - 已添加对地址 0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89 的RewardPaid事件监听
+2025-03-19 18:02:54,189 - DEBUG - = connection is CONNECTING
+2025-03-19 18:02:54,422 - DEBUG - > GET / HTTP/1.1
+2025-03-19 18:02:54,422 - DEBUG - > Host: berachain-rpc.publicnode.com
+2025-03-19 18:02:54,422 - DEBUG - > Upgrade: websocket
+2025-03-19 18:02:54,422 - DEBUG - > Connection: Upgrade
+2025-03-19 18:02:54,422 - DEBUG - > Sec-WebSocket-Key: SZg5vXFmKmKz88XBJjKd8g==
+2025-03-19 18:02:54,422 - DEBUG - > Sec-WebSocket-Version: 13
+2025-03-19 18:02:54,422 - DEBUG - > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2025-03-19 18:02:54,422 - DEBUG - > User-Agent: Python/3.9 websockets/13.1
+2025-03-19 18:02:54,855 - DEBUG - < HTTP/1.1 101 Switching Protocols
+2025-03-19 18:02:54,855 - DEBUG - < Date: Wed, 19 Mar 2025 10:02:55 GMT
+2025-03-19 18:02:54,855 - DEBUG - < Connection: upgrade
+2025-03-19 18:02:54,855 - DEBUG - < Sec-Websocket-Accept: TMtT1ERgxE0umM9tOgNty8/Fnfw=
+2025-03-19 18:02:54,855 - DEBUG - < Upgrade: websocket
+2025-03-19 18:02:54,855 - DEBUG - < cf-cache-status: DYNAMIC
+2025-03-19 18:02:54,855 - DEBUG - < Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+2025-03-19 18:02:54,855 - DEBUG - < X-Content-Type-Options: nosniff
+2025-03-19 18:02:54,855 - DEBUG - < Server: cloudflare
+2025-03-19 18:02:54,855 - DEBUG - < CF-RAY: 922c230e19b47be6-LAX
+2025-03-19 18:02:54,856 - DEBUG - < alt-svc: h3=":443"; ma=86400
+2025-03-19 18:02:54,856 - DEBUG - = connection is OPEN
+2025-03-19 18:02:54,856 - INFO - 成功连接到Berachain WebSocket
+2025-03-19 18:02:54,888 - DEBUG - > TEXT '{"jsonrpc": "2.0", "id": 1, "method": "eth_subs...7b6d55ba369dea792e"]}]}' [215 bytes]
+2025-03-19 18:02:55,245 - DEBUG - < TEXT '{"jsonrpc":"2.0","result":"0xfef5ecae7b286dc539c53da72ec4a9d6","id":1}\n' [71 bytes]
+2025-03-19 18:02:55,246 - INFO - 开始监听事件 RewardPaid
+2025-03-19 18:03:14,892 - DEBUG - % sending keepalive ping
+2025-03-19 18:03:14,896 - DEBUG - > PING 17 20 81 1a [binary, 4 bytes]
+2025-03-19 18:03:15,268 - DEBUG - < PONG 17 20 81 1a [binary, 4 bytes]
+2025-03-19 18:03:15,270 - DEBUG - % received keepalive pong
+2025-03-19 18:03:35,271 - DEBUG - % sending keepalive ping
+2025-03-19 18:03:35,273 - DEBUG - > PING 9b c3 7f 3b [binary, 4 bytes]
+2025-03-19 18:03:35,547 - DEBUG - < PONG 9b c3 7f 3b [binary, 4 bytes]
+2025-03-19 18:03:35,548 - DEBUG - % received keepalive pong
+2025-03-19 18:03:55,549 - DEBUG - % sending keepalive ping
+2025-03-19 18:03:55,549 - DEBUG - > PING bd 71 71 2f [binary, 4 bytes]
+2025-03-19 18:03:55,978 - DEBUG - < PONG bd 71 71 2f [binary, 4 bytes]
+2025-03-19 18:03:55,979 - DEBUG - % received keepalive pong
+2025-03-19 18:04:15,980 - DEBUG - % sending keepalive ping
+2025-03-19 18:04:15,981 - DEBUG - > PING ec 19 b3 b5 [binary, 4 bytes]
+2025-03-19 18:04:16,293 - DEBUG - < PONG ec 19 b3 b5 [binary, 4 bytes]
+2025-03-19 18:04:16,295 - DEBUG - % received keepalive pong
+2025-03-19 18:04:36,296 - DEBUG - % sending keepalive ping
+2025-03-19 18:04:36,297 - DEBUG - > PING cb 40 da c3 [binary, 4 bytes]
+2025-03-19 18:04:36,614 - DEBUG - < PONG cb 40 da c3 [binary, 4 bytes]
+2025-03-19 18:04:36,615 - DEBUG - % received keepalive pong
+2025-03-19 18:04:39,357 - DEBUG - < TEXT '{"jsonrpc":"2.0","method":"eth_subscription","p...c539c53da72ec4a9d6"}}\n' [717 bytes]
+2025-03-19 18:04:39,394 - ERROR - 解码事件数据时出错: 'transactionIndex'
+2025-03-19 18:04:39,395 - DEBUG - 解码事件数据: None
+2025-03-19 18:04:39,395 - DEBUG - 没有解码数据，无法应用过滤条件
+2025-03-19 18:04:39,395 - DEBUG - 数据过滤条件不匹配: filters=[{'param_name': 'to', 'condition': 'eq', 'value': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89'}]
+2025-03-19 18:04:39,395 - DEBUG - 没有匹配的过滤条件，忽略事件
+2025-03-19 18:04:39,396 - DEBUG - 事件不符合过滤条件，忽略: 0x6efffdbb3e69935a83d4356402b167b907775843ab047a177f1bf2bff7219835
+2025-03-19 18:04:56,616 - DEBUG - % sending keepalive ping
+2025-03-19 18:04:56,616 - DEBUG - > PING e3 fd e3 dc [binary, 4 bytes]
+2025-03-19 18:04:56,976 - DEBUG - < PONG e3 fd e3 dc [binary, 4 bytes]
+2025-03-19 18:04:56,977 - DEBUG - % received keepalive pong
+2025-03-19 18:05:05,804 - INFO - 接收到信号 2，准备关闭...
+2025-03-19 18:05:05,804 - DEBUG - = connection is CLOSING
+2025-03-19 18:05:05,804 - DEBUG - > CLOSE 1000 (OK) [2 bytes]
+2025-03-19 18:05:06,153 - DEBUG - < CLOSE 1000 (OK) [2 bytes]
+2025-03-19 18:05:07,164 - DEBUG - = connection is CLOSED
+2025-03-19 18:05:07,164 - DEBUG - x closing TCP connection
+2025-03-19 18:05:07,165 - INFO - 程序已终止
+2025-03-19 18:14:22,665 - DEBUG - Using selector: KqueueSelector
+2025-03-19 18:14:22,668 - INFO - 监听以下地址的RewardPaid事件: ['0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89']
+2025-03-19 18:14:22,673 - INFO - 添加对地址 0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89 的RewardPaid事件监听
+2025-03-19 18:14:22,910 - DEBUG - = connection is CONNECTING
+2025-03-19 18:14:23,163 - DEBUG - > GET / HTTP/1.1
+2025-03-19 18:14:23,163 - DEBUG - > Host: berachain-rpc.publicnode.com
+2025-03-19 18:14:23,163 - DEBUG - > Upgrade: websocket
+2025-03-19 18:14:23,163 - DEBUG - > Connection: Upgrade
+2025-03-19 18:14:23,163 - DEBUG - > Sec-WebSocket-Key: VvexZNErFBo6SXHhvICyGA==
+2025-03-19 18:14:23,163 - DEBUG - > Sec-WebSocket-Version: 13
+2025-03-19 18:14:23,163 - DEBUG - > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2025-03-19 18:14:23,164 - DEBUG - > User-Agent: Python/3.9 websockets/13.1
+2025-03-19 18:14:23,640 - DEBUG - < HTTP/1.1 101 Switching Protocols
+2025-03-19 18:14:23,641 - DEBUG - < Date: Wed, 19 Mar 2025 10:14:23 GMT
+2025-03-19 18:14:23,641 - DEBUG - < Connection: upgrade
+2025-03-19 18:14:23,641 - DEBUG - < Sec-Websocket-Accept: qjf5XIb6ecZiWbxLEpeiA1aj6Y0=
+2025-03-19 18:14:23,641 - DEBUG - < Upgrade: websocket
+2025-03-19 18:14:23,641 - DEBUG - < cf-cache-status: DYNAMIC
+2025-03-19 18:14:23,641 - DEBUG - < Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+2025-03-19 18:14:23,642 - DEBUG - < X-Content-Type-Options: nosniff
+2025-03-19 18:14:23,642 - DEBUG - < Server: cloudflare
+2025-03-19 18:14:23,642 - DEBUG - < CF-RAY: 922c33ddeb69532b-LAX
+2025-03-19 18:14:23,642 - DEBUG - < alt-svc: h3=":443"; ma=86400
+2025-03-19 18:14:23,642 - DEBUG - = connection is OPEN
+2025-03-19 18:14:23,642 - INFO - 成功连接到Berachain WebSocket
+2025-03-19 18:14:23,663 - DEBUG - > TEXT '{"jsonrpc": "2.0", "id": 1, "method": "eth_subs...7b6d55ba369dea792e"]}]}' [215 bytes]
+2025-03-19 18:14:24,114 - DEBUG - < TEXT '{"jsonrpc":"2.0","result":"0x2034b5a22e553f2a685d48956b898eed","id":1}\n' [71 bytes]
+2025-03-19 18:14:24,117 - INFO - 成功订阅，ID: 0x2034b5a22e553f2a685d48956b898eed，开始监听事件 RewardPaid
+2025-03-19 18:14:43,666 - DEBUG - % sending keepalive ping
+2025-03-19 18:14:43,668 - DEBUG - > PING 3e 1e 6a a5 [binary, 4 bytes]
+2025-03-19 18:14:43,966 - DEBUG - < PONG 3e 1e 6a a5 [binary, 4 bytes]
+2025-03-19 18:14:43,967 - DEBUG - % received keepalive pong
+2025-03-19 18:14:46,307 - DEBUG - < TEXT '{"jsonrpc":"2.0","method":"eth_subscription","p...2a685d48956b898eed"}}\n' [717 bytes]
+2025-03-19 18:14:46,309 - DEBUG - 开始解码事件 RewardPaid，日志数据: {'topics': ['0x540798df468d7b23d11f156fdb954cb19ad414d150722a7b6d55ba369dea792e', '0x00000000000000000000000040692724326503b8fdc8472df7ee658f4bdbfc89'], 'data': '0x00000000000000000000000040692724326503b8fdc8472df7ee658f4bdbfc8900000000000000000000000000000000000000000000000000366d6a8e66b281', 'address': '0x44f07ce5afecbcc406e6befd40cc2998eeb8c7c6', 'blockNumber': '0x26d67b', 'transactionHash': '0x4dc2bd6b03cb179dd4b8e53a1b58571061e2ee9c1a5f0ed86cd43df7b5268bed', 'transactionIndex': '0x20', 'logIndex': '0x2d', 'blockHash': '0x0c651385c549a70d5f845b664030ce66f52b3321e6dc5add2068bcb6412c4856'}
+2025-03-19 18:14:46,321 - DEBUG - 事件 RewardPaid 解码成功: {'account': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'to': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'reward': 15319953165431425}
+2025-03-19 18:14:46,321 - DEBUG - 解码事件数据: {'account': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'to': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'reward': 15319953165431425}
+2025-03-19 18:14:46,321 - DEBUG - 开始检查数据过滤条件: [{'param_name': 'to', 'condition': 'eq', 'value': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89'}]
+2025-03-19 18:14:46,322 - DEBUG - 解码数据: {'account': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'to': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'reward': 15319953165431425}
+2025-03-19 18:14:46,322 - DEBUG - 检查条件: to eq 0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89, 实际值: 0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89
+2025-03-19 18:14:46,322 - DEBUG - 等于比较成功: 0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89 == 0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89
+2025-03-19 18:14:46,322 - DEBUG - 所有过滤条件均满足
+2025-03-19 18:14:46,322 - DEBUG - 事件满足过滤条件
+2025-03-19 18:14:46,322 - DEBUG - 开始解码事件 RewardPaid，日志数据: {'topics': ['0x540798df468d7b23d11f156fdb954cb19ad414d150722a7b6d55ba369dea792e', '0x00000000000000000000000040692724326503b8fdc8472df7ee658f4bdbfc89'], 'data': '0x00000000000000000000000040692724326503b8fdc8472df7ee658f4bdbfc8900000000000000000000000000000000000000000000000000366d6a8e66b281', 'address': '0x44f07ce5afecbcc406e6befd40cc2998eeb8c7c6', 'blockNumber': '0x26d67b', 'transactionHash': '0x4dc2bd6b03cb179dd4b8e53a1b58571061e2ee9c1a5f0ed86cd43df7b5268bed', 'transactionIndex': '0x20', 'logIndex': '0x2d', 'blockHash': '0x0c651385c549a70d5f845b664030ce66f52b3321e6dc5add2068bcb6412c4856'}
+2025-03-19 18:14:46,323 - DEBUG - 事件 RewardPaid 解码成功: {'account': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'to': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'reward': 15319953165431425}
+2025-03-19 18:14:46,324 - INFO - 接收到 RewardPaid 事件: 用户=0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89, 接收者=0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89, 奖励金额=15319953165431425
+2025-03-19 18:14:46,325 - ERROR - 保存事件数据时出错: Expecting value: line 2 column 1 (char 1)
+2025-03-19 18:15:03,970 - DEBUG - % sending keepalive ping
+2025-03-19 18:15:03,971 - DEBUG - > PING 76 f0 93 aa [binary, 4 bytes]
+2025-03-19 18:15:04,276 - DEBUG - < PONG 76 f0 93 aa [binary, 4 bytes]
+2025-03-19 18:15:04,277 - DEBUG - % received keepalive pong
+2025-03-19 18:15:24,278 - DEBUG - % sending keepalive ping
+2025-03-19 18:15:24,279 - DEBUG - > PING fa 57 4a b9 [binary, 4 bytes]
+2025-03-19 18:15:24,612 - DEBUG - < PONG fa 57 4a b9 [binary, 4 bytes]
+2025-03-19 18:15:24,613 - DEBUG - % received keepalive pong
+2025-03-19 18:15:39,915 - DEBUG - < TEXT '{"jsonrpc":"2.0","method":"eth_subscription","p...2a685d48956b898eed"}}\n' [716 bytes]
+2025-03-19 18:15:39,916 - DEBUG - 开始解码事件 RewardPaid，日志数据: {'topics': ['0x540798df468d7b23d11f156fdb954cb19ad414d150722a7b6d55ba369dea792e', '0x0000000000000000000000004d72d4269ab46962713ca19cab8161a87684a163'], 'data': '0x0000000000000000000000004d72d4269ab46962713ca19cab8161a87684a1630000000000000000000000000000000000000000000000006e596399e31eb98d', 'address': '0x44f07ce5afecbcc406e6befd40cc2998eeb8c7c6', 'blockNumber': '0x26d696', 'transactionHash': '0x7a494cb24c7698d019e166da7b173af15b7ddd10cd770f9ee643bc756adb53d0', 'transactionIndex': '0xc', 'logIndex': '0x18', 'blockHash': '0xc901c6c30062ae420b8fc99d56461b25af1f69dc6fcb1702cd3d3e8def4326c7'}
+2025-03-19 18:15:39,917 - DEBUG - 事件 RewardPaid 解码成功: {'account': '0x4d72D4269Ab46962713ca19cAb8161A87684A163', 'to': '0x4d72D4269Ab46962713ca19cAb8161A87684A163', 'reward': 7951496129690909069}
+2025-03-19 18:15:39,918 - DEBUG - 解码事件数据: {'account': '0x4d72D4269Ab46962713ca19cAb8161A87684A163', 'to': '0x4d72D4269Ab46962713ca19cAb8161A87684A163', 'reward': 7951496129690909069}
+2025-03-19 18:15:39,918 - DEBUG - 开始检查数据过滤条件: [{'param_name': 'to', 'condition': 'eq', 'value': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89'}]
+2025-03-19 18:15:39,918 - DEBUG - 解码数据: {'account': '0x4d72D4269Ab46962713ca19cAb8161A87684A163', 'to': '0x4d72D4269Ab46962713ca19cAb8161A87684A163', 'reward': 7951496129690909069}
+2025-03-19 18:15:39,919 - DEBUG - 检查条件: to eq 0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89, 实际值: 0x4d72D4269Ab46962713ca19cAb8161A87684A163
+2025-03-19 18:15:39,919 - DEBUG - 等于比较失败: 0x4d72D4269Ab46962713ca19cAb8161A87684A163 != 0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89
+2025-03-19 18:15:39,920 - DEBUG - 数据过滤条件不匹配: filters=[{'param_name': 'to', 'condition': 'eq', 'value': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89'}]
+2025-03-19 18:15:39,920 - DEBUG - 没有匹配的过滤条件，忽略事件
+2025-03-19 18:15:39,920 - DEBUG - 事件不符合过滤条件，忽略: 0x7a494cb24c7698d019e166da7b173af15b7ddd10cd770f9ee643bc756adb53d0
+2025-03-19 18:15:44,614 - DEBUG - % sending keepalive ping
+2025-03-19 18:15:44,615 - DEBUG - > PING 7e 62 8f 37 [binary, 4 bytes]
+2025-03-19 18:15:44,924 - DEBUG - < PONG 7e 62 8f 37 [binary, 4 bytes]
+2025-03-19 18:15:44,924 - DEBUG - % received keepalive pong
+2025-03-19 18:16:04,925 - DEBUG - % sending keepalive ping
+2025-03-19 18:16:04,927 - DEBUG - > PING 48 fc e4 75 [binary, 4 bytes]
+2025-03-19 18:16:05,272 - DEBUG - < PONG 48 fc e4 75 [binary, 4 bytes]
+2025-03-19 18:16:05,272 - DEBUG - % received keepalive pong
+2025-03-19 18:16:25,274 - DEBUG - % sending keepalive ping
+2025-03-19 18:16:25,274 - DEBUG - > PING 3d f1 6d c8 [binary, 4 bytes]
+2025-03-19 18:16:25,590 - DEBUG - < PONG 3d f1 6d c8 [binary, 4 bytes]
+2025-03-19 18:16:25,591 - DEBUG - % received keepalive pong
+2025-03-19 18:16:45,592 - DEBUG - % sending keepalive ping
+2025-03-19 18:16:45,593 - DEBUG - > PING 8c 13 d5 91 [binary, 4 bytes]
+2025-03-19 18:16:45,877 - DEBUG - < PONG 8c 13 d5 91 [binary, 4 bytes]
+2025-03-19 18:16:45,877 - DEBUG - % received keepalive pong
+2025-03-19 18:17:05,879 - DEBUG - % sending keepalive ping
+2025-03-19 18:17:05,879 - DEBUG - > PING 4f 19 8b e4 [binary, 4 bytes]
+2025-03-19 18:17:06,180 - DEBUG - < PONG 4f 19 8b e4 [binary, 4 bytes]
+2025-03-19 18:17:06,181 - DEBUG - % received keepalive pong
+2025-03-19 18:17:26,183 - DEBUG - % sending keepalive ping
+2025-03-19 18:17:26,184 - DEBUG - > PING 59 c7 50 16 [binary, 4 bytes]
+2025-03-19 18:17:26,479 - DEBUG - < PONG 59 c7 50 16 [binary, 4 bytes]
+2025-03-19 18:17:26,480 - DEBUG - % received keepalive pong
+2025-03-19 18:17:46,480 - DEBUG - % sending keepalive ping
+2025-03-19 18:17:46,481 - DEBUG - > PING 2e 13 95 97 [binary, 4 bytes]
+2025-03-19 18:17:46,836 - DEBUG - < PONG 2e 13 95 97 [binary, 4 bytes]
+2025-03-19 18:17:46,837 - DEBUG - % received keepalive pong
+2025-03-19 18:18:06,841 - DEBUG - % sending keepalive ping
+2025-03-19 18:18:06,845 - DEBUG - > PING 5d 52 cb 1b [binary, 4 bytes]
+2025-03-19 18:18:07,218 - DEBUG - < PONG 5d 52 cb 1b [binary, 4 bytes]
+2025-03-19 18:18:07,219 - DEBUG - % received keepalive pong
+2025-03-19 18:18:14,340 - DEBUG - < TEXT '{"jsonrpc":"2.0","method":"eth_subscription","p...2a685d48956b898eed"}}\n' [717 bytes]
+2025-03-19 18:18:14,341 - DEBUG - 开始解码事件 RewardPaid，日志数据: {'topics': ['0x540798df468d7b23d11f156fdb954cb19ad414d150722a7b6d55ba369dea792e', '0x00000000000000000000000040692724326503b8fdc8472df7ee658f4bdbfc89'], 'data': '0x00000000000000000000000040692724326503b8fdc8472df7ee658f4bdbfc890000000000000000000000000000000000000000000000000012a66fd2f9b45e', 'address': '0x44f07ce5afecbcc406e6befd40cc2998eeb8c7c6', 'blockNumber': '0x26d6e6', 'transactionHash': '0xa7b2126f570d097eb2e4175c2bf698c57a58e1e2d6a661b10b84f3050cf3ae4b', 'transactionIndex': '0x2f', 'logIndex': '0x96', 'blockHash': '0xff2e16ae0b286110bdb461270fbcbea93f7103c62dca136a35a08a51e8a9db75'}
+2025-03-19 18:18:14,341 - DEBUG - 事件 RewardPaid 解码成功: {'account': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'to': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'reward': 5249548791952478}
+2025-03-19 18:18:14,342 - DEBUG - 解码事件数据: {'account': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'to': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'reward': 5249548791952478}
+2025-03-19 18:18:14,342 - DEBUG - 开始检查数据过滤条件: [{'param_name': 'to', 'condition': 'eq', 'value': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89'}]
+2025-03-19 18:18:14,342 - DEBUG - 解码数据: {'account': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'to': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'reward': 5249548791952478}
+2025-03-19 18:18:14,342 - DEBUG - 检查条件: to eq 0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89, 实际值: 0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89
+2025-03-19 18:18:14,342 - DEBUG - 等于比较成功: 0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89 == 0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89
+2025-03-19 18:18:14,342 - DEBUG - 所有过滤条件均满足
+2025-03-19 18:18:14,342 - DEBUG - 事件满足过滤条件
+2025-03-19 18:18:14,343 - DEBUG - 开始解码事件 RewardPaid，日志数据: {'topics': ['0x540798df468d7b23d11f156fdb954cb19ad414d150722a7b6d55ba369dea792e', '0x00000000000000000000000040692724326503b8fdc8472df7ee658f4bdbfc89'], 'data': '0x00000000000000000000000040692724326503b8fdc8472df7ee658f4bdbfc890000000000000000000000000000000000000000000000000012a66fd2f9b45e', 'address': '0x44f07ce5afecbcc406e6befd40cc2998eeb8c7c6', 'blockNumber': '0x26d6e6', 'transactionHash': '0xa7b2126f570d097eb2e4175c2bf698c57a58e1e2d6a661b10b84f3050cf3ae4b', 'transactionIndex': '0x2f', 'logIndex': '0x96', 'blockHash': '0xff2e16ae0b286110bdb461270fbcbea93f7103c62dca136a35a08a51e8a9db75'}
+2025-03-19 18:18:14,344 - DEBUG - 事件 RewardPaid 解码成功: {'account': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'to': '0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89', 'reward': 5249548791952478}
+2025-03-19 18:18:14,345 - INFO - 接收到 RewardPaid 事件: 用户=0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89, 接收者=0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89, 奖励金额=5249548791952478
+2025-03-19 18:18:14,347 - ERROR - 保存事件数据时出错: Expecting value: line 2 column 1 (char 1)
+2025-03-19 18:18:27,220 - DEBUG - % sending keepalive ping
+2025-03-19 18:18:27,220 - DEBUG - > PING 71 9c a8 3d [binary, 4 bytes]
+2025-03-19 18:18:27,511 - DEBUG - < PONG 71 9c a8 3d [binary, 4 bytes]
+2025-03-19 18:18:27,512 - DEBUG - % received keepalive pong
+2025-03-19 18:18:47,512 - DEBUG - % sending keepalive ping
+2025-03-19 18:18:47,513 - DEBUG - > PING df f4 c0 bd [binary, 4 bytes]
+2025-03-19 18:18:47,829 - DEBUG - < PONG df f4 c0 bd [binary, 4 bytes]
+2025-03-19 18:18:47,830 - DEBUG - % received keepalive pong
+2025-03-19 18:19:02,678 - INFO - 接收到信号 2，准备关闭...
+2025-03-19 18:19:02,679 - DEBUG - = connection is CLOSING
+2025-03-19 18:19:02,679 - DEBUG - > CLOSE 1000 (OK) [2 bytes]
+2025-03-19 18:19:02,990 - DEBUG - < CLOSE 1000 (OK) [2 bytes]
+2025-03-19 18:19:03,992 - DEBUG - = connection is CLOSED
+2025-03-19 18:19:03,993 - DEBUG - x closing TCP connection
+2025-03-19 18:19:03,994 - INFO - 程序已终止
