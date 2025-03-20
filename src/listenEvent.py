@@ -344,7 +344,7 @@ class BeraWebSocketListener:
             
             # 异步调用init_stake_snapshot
             try:
-                await asyncio.to_thread(update_stake_snapshot, blockNumber=int(event.get('blockNumber', '0x0'), 16))
+                await asyncio.to_thread(update_stake_snapshot, txId=event.get('transactionHash'))
                 logger.info("成功更新质押快照")
             except Exception as e:
                 logger.error(f"更新质押快照时出错: {str(e)}")
@@ -432,6 +432,8 @@ async def main():
     
     beconDeposit_address = config.get('contracts', {}).get('Beacon Deposit', {}).get('address')
     beconDeposit_abi = config.get('contracts', {}).get('Beacon Deposit', {}).get('abi')
+    pubkey1 = config.get('nodeInfo', {}).get('pubkey1')
+
 
     listener = None
     try:
@@ -440,7 +442,6 @@ async def main():
         listener.setup_signal_handlers()
         
         # 添加事件过滤器
-        target_pubkey = "0x你的目标pubkey"  # 替换为你要过滤的pubkey
         
         listener.add_event_filter(
             event_signature="Deposit(bytes,bytes,uint64,bytes,uint64)",
@@ -449,7 +450,7 @@ async def main():
                 {
                     'param_name': 'pubkey',
                     'condition': 'eq',
-                    'value': target_pubkey
+                    'value': pubkey1
                 }
             ]
         )

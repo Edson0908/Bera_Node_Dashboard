@@ -25,3 +25,5 @@ Thumbs.db
 # 数据文件
 data/
 info.txt
+
+config/config-test.json

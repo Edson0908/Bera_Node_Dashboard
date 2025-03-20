@@ -247,6 +247,9 @@ def validator_overview():
 
 def update_stake_snapshot(txId):
 
+    if txId is None:
+        return None
+
     config = load_config()
 
     validator_pubkey2 = config['nodeInfo']['pubkey2']
@@ -420,25 +423,11 @@ def get_bgt_distributed(address):
 
     return 0
 
-def test():
-    
-    data_dir = 'data'
-    json_files = [f for f in os.listdir(data_dir) if f.startswith('stake_snapshot_') and f.endswith('.json')]
-    
-    latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
-    file_path = os.path.join(data_dir, latest_file)
-    # 读取现有数据
-    with open(file_path, 'r', encoding='utf-8') as f:
-        existing_data = json.load(f)
-        print(f"成功读取文件: {file_path}")
-        
-    existing_data = existing_data['results']
 
-    calculate_honey_rewards(existing_data)
 
 if __name__ == "__main__":
 
+    validator_overview()
     init_stake_snapshot()
-    #validator_overview()
+    
     #update_stake_snapshot()
-    #test()
