@@ -79,10 +79,11 @@ class BeraWebSocketListener:
             ssl_context.verify_mode = ssl.CERT_NONE
 
             self.w3 = Web3()
-            self.ws = await connect(
-                self.ws_url,
-                ssl=ssl_context
-            )
+            # 如果URL以ws://开头，不要提供ssl参数
+            if self.ws_url.startswith("ws://"):
+                self.ws = await connect(self.ws_url)
+            else:  # wss://
+                self.ws = await connect(self.ws_url, ssl=ssl_context)
             
             while not self.ws.open and self.running:
                 logger.warning("无法连接到Berachain网络，5秒后重试...")
