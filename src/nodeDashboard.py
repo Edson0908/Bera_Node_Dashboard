@@ -96,5 +96,6 @@ def index():
                          timestamp=formatted_time)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))  # 从环境变量获取端口，默认5000
+    app.run(debug=True, host='0.0.0.0', port=port)
     
