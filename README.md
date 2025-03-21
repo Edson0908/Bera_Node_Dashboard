@@ -15,10 +15,9 @@
 3. requestDuneData
 
 - 首次启动前先执行 init_stake_snapshot()和 validator_overview()，初始化数据
-- validator_overview()和 update_stake_snapshot()定期运行（1 天）
+- validator_overview()定期运行（1 天）
 
 4. listenEvent 后台运行
 
-- Deposit 事件触发 init_stake_snapshot()和 claim_honey_rewards()
-  init_stake_snapshot()：重新计算 staker 的权重
-  claim_honey_rewards()：claim 已经获得 HONEY（下一阶段 HONEY 奖励按照新的 BGT Boost 分布计算）
+- Deposit 事件触发 update_stake_snapshot()
+  update_stake_snapshot()：重新计算 staker 的权重
