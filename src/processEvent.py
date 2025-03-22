@@ -58,7 +58,7 @@ def process_active_event(blockNumber, bgtAmount):
 
     honeyBalance0 = get_honey_balance(operator_address)
     try:
-        receipt = asyncio.run(claim_honey_rewards(pubkey, blockNumber))
+        receipt = asyncio.run(claim_honey_rewards())
         if receipt is None:
             raise Exception("claim honey rewards 失败")
     except Exception as e:
