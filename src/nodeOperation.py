@@ -2,6 +2,7 @@ import json
 import os
 from web3 import Web3
 from dotenv import load_dotenv
+import asyncio
 
 load_dotenv(override=True)
 
@@ -36,7 +37,7 @@ def get_unclaimed_honey_rewards():
     print(f"未领取的honey奖励: {balance}")
     return balance
 
-def claim_honey_rewards():
+async def claim_honey_rewards():
     config = load_config()
     
     contract_address = config.get('contracts', {}).get('BGT Staker', {}).get('address')
@@ -50,12 +51,46 @@ def claim_honey_rewards():
     tx['nonce'] = web3.eth.get_transaction_count(tx['from'])
     signed_tx = web3.eth.account.sign_transaction(tx, PRIVATE_KEY)
     tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
-    print(f"交易哈希: {tx_hash.hex()}")
-    # 获取当前区块
+
+    # 等待交易确认
+    try:
+        receipt = await web3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)  # 120秒超时
+        if receipt['status'] == 1:
+            print(f"交易确认成功，区块号: {receipt['blockNumber']}")
+            return receipt
+        else:
+            print("交易执行失败")
+            return None
+    except Exception as e:
+        print(f"等待交易确认时出错: {str(e)}")
+        return None
+
+
+def get_boosted_amount(address):
+    config = load_config()
+    contract_address = config.get('contracts', {}).get('BGT Token', {}).get('address')
+    contract_abi = config.get('contracts', {}).get('BGT Token', {}).get('abi')
+    contract = web3.eth.contract(address=contract_address, abi=contract_abi)
+    amount = contract.functions.boosts(address).call() / (10 ** 18)
+    print(f"节点{address}的boosted amount: {amount}")
+
+    return amount
+
+
+def get_honey_balance(address):
+    config = load_config()
+    contract_address = config.get('contracts', {}).get('HONEY Token', {}).get('address')
+    contract_abi = config.get('contracts', {}).get('HONEY Token', {}).get('abi')
+    contract = web3.eth.contract(address=contract_address, abi=contract_abi)
+    balance = contract.functions.balanceOf(address).call() / (10 ** 18)
+    
+    return balance
 
 if __name__ == "__main__":
     #claim_honey_rewards()
-    get_unclaimed_honey_rewards()
+    #get_unclaimed_honey_rewards()
+
+    get_boosted_amount('0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89')
 
 
 

@@ -350,78 +350,85 @@ def update_stake_snapshot(txId):
         return None
 
 
-def calculate_honey_rewards(data):
+def calculate_honey_rewards():
 
-    saved_file_prefix = "honey_rewards"
+    saved_file_prefix = "stake_snapshot"
+    processed_index_prefix = "processed_index"
 
     data_dir = 'data'
     json_files = [f for f in os.listdir(data_dir) if f.startswith(saved_file_prefix) and f.endswith('.json')]
+
+    latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
+    file_path = os.path.join(data_dir, latest_file)
+    
+    # 读取现有数据
+    with open(file_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+        print(f"成功读取文件: {file_path}")
+        data = data['results']
+
+    json_files = [f for f in os.listdir(data_dir) if f.startswith(processed_index_prefix) and f.endswith('.json')]
     if json_files:
         latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
         file_path = os.path.join(data_dir, latest_file)
-        # 读取现有数据
         with open(file_path, 'r', encoding='utf-8') as f:
-            existing_data = json.load(f)
-            print(f"成功读取文件: {file_path}")
-            existing_data = existing_data['results']
+            last_processed_record = json.load(f)
     else:
-        existing_data={}
+        last_processed_record = {}
 
-    total_bgt_boosted = 0
 
     for key, value in data.items():
-
-        total_bgt_rewards = 0
-        for item in value['Records']:
-            total_bgt_rewards += item['Staker BGT Rewards']
-        bgt_distributed = get_bgt_distributed(key)
-        bgt_boosted = total_bgt_rewards - bgt_distributed
-        total_bgt_boosted += bgt_boosted
-
-        last_record = value['Records'][-1]
-        
-        if key not in existing_data.keys():
-            existing_data[key] = {}
-            existing_data[key]['Rewards'] = []
-            start_block = last_record['Start Block']
-            end_block = last_record['End Block']
-            existing_data[key]['Rewards'].append({
-                "Start Block": start_block,
-                "End Block": end_block
-            })
+        index = last_processed_record.get(key, None)
+        if index is None:
+            index = 0
         else:
-            if existing_data[key]['Rewards'][-1]['Start Block'] == last_record['Start Block']:
-                start_block = existing_data[key]['Rewards'][-1]['Start Block']
-                end_block = last_record['End Block']
-                existing_data[key]['Rewards'][-1]['End Block'] = end_block
-            else:
-                start_block = last_record['Start Block']
-                end_block = last_record['End Block']
-                existing_data[key]['Rewards'].append({
-                    "Start Block": start_block,
-                    "End Block": end_block
-                })
+            index += 1
         
-        existing_data[key]['Rewards'][-1]['BGT Boosted'] = bgt_boosted
-        total_honey_reward = get_total_honey_reward(last_record['Start Block'])
+        staker_total_honey_reward = value.get('Total Honey Rewards', 0)
 
+        while index < len(value['Records']):
+            record = value['Records'][index]
+            if record.get('Total Boosted', None) is None:
+                break
+            else:
+                record['Total Honey Rewards'] = get_total_honey_reward(record.get('End Block')) #节点在该时段获得的总HONEY
+                record['Staker Honey Rewards'] = record['Total Honey Rewards'] * record['Boost Weight'] #Staker在该时段获得的HONEY
+                record['Honey Commission'] = record['Staker Honey Rewards'] * record['Commission Rate'] #Staker在该时段的HONEY奖励
+                record['Honey Rewards'] = record['Staker Honey Rewards'] - record['Honey Commission'] #Staker在该时段扣除commission后的HONEY奖励
+                staker_total_honey_reward += record['Honey Rewards'] #Staker lifetime HONEY 奖励
+                index += 1
 
+        last_processed_record[key] = index
+        value['Total Honey Rewards'] = staker_total_honey_reward
+ 
      # 保存更新后的数据
-    save_results_to_json(existing_data, saved_file_prefix)
+    save_results_to_json(data, saved_file_prefix)
+    save_results_to_json(last_processed_record, processed_index_prefix)
     print("数据已更新并保存")
     return None
 
-def get_total_honey_reward(start_bolck):
+def get_total_honey_reward(end_block):
+    saved_file_prefix = "honey_rewards_claimed"
 
-    unclaimed_honey_rewards = get_unclaimed_honey_rewards()
+    data_dir = 'data'
+    json_files = [f for f in os.listdir(data_dir) if f.startswith(saved_file_prefix) and f.endswith('.json')]
+
+    if json_files is None:
+        return 0
+
+    latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
+    file_path = os.path.join(data_dir, latest_file)
     
-    claimed_honey_rewards = 0 # 需要从dune获取, 大于start_block的honey_rewards，并去掉第一条记录
+    # 读取现有数据
+    with open(file_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+        print(f"成功读取文件: {file_path}")
+        data = data['results']
 
-    return unclaimed_honey_rewards + claimed_honey_rewards
+    value = data.get(end_block, 0)
 
-def get_bgt_distributed(address):
 
-    return 0
+    return value
 
 
 

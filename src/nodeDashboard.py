@@ -60,6 +60,39 @@ def get_latest_data():
     
     return returnData, data.get('timestamp')
 
+
+def process_stake_snapshot_data(data):
+
+    processed_data = {}
+
+    for key, value in data.items():
+        processed_data[key] = {}
+        processed_data[key]['Records'] = []
+
+        index = 0
+        for record in value.get('Records'):
+            if record.get('End Block', None) is None:
+                break
+            if index == 0:
+                processed_data[key]['Records'].append(record)
+            else:
+                if record.get('Total Staked') == value.get('Records')[index - 1].get('Total Staked') and record.get('Weight') == value.get('Records')[index - 1].get('Weight'):
+                    processed_data[key]['Records'][-1]['End Block'] = record.get('End Block')
+                    processed_data[key]['Records'][-1]['Total BGT Rewards'] += record.get('Total BGT Rewards')
+                    processed_data[key]['Records'][-1]['Staker BGT Rewards'] += record.get('Staker BGT Rewards')
+                    processed_data[key]['Records'][-1]['Commission'] += record.get('Commission')
+                    processed_data[key]['Records'][-1]['BGT Rewards'] += record.get('BGT Rewards')
+                else:
+                    processed_data[key]['Records'].append(record)
+            index += 1
+
+    return processed_data
+                
+                
+                
+
+                
+
 @app.route('/')
 def index():
 
@@ -82,6 +115,9 @@ def index():
 
     overviewData = data['overviewData']
     stakeSnapshotData = data['stakeSnapshotData']['results']
+
+    processed_stakeSnapshotData = process_stake_snapshot_data(stakeSnapshotData)
+
     print(json.dumps(stakeSnapshotData, indent=2, ensure_ascii=False))
   
     
@@ -92,7 +128,7 @@ def index():
                          data=overviewData,
                          headers=headers,
                          stakeSnapshotHeaders=stakeSnapshotHeaders,
-                         stakeSnapshotData=stakeSnapshotData,
+                         stakeSnapshotData=processed_stakeSnapshotData,
                          timestamp=formatted_time)
 
 if __name__ == '__main__':
