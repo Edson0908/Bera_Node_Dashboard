@@ -68,7 +68,7 @@ def process_stake_snapshot_data(data):
     for key, value in data.items():
         processed_data[key] = {}
         processed_data[key]['Records'] = []
-
+        processed_data[key]['name'] = value.get('name', key)
         index = 0
         for record in value.get('Records'):
             if record.get('End Block', None) is None:
@@ -119,6 +119,7 @@ def index():
     processed_stakeSnapshotData = process_stake_snapshot_data(stakeSnapshotData)
 
     print(json.dumps(stakeSnapshotData, indent=2, ensure_ascii=False))
+    print(json.dumps(processed_stakeSnapshotData, indent=2, ensure_ascii=False))
   
     
     # 格式化时间戳
