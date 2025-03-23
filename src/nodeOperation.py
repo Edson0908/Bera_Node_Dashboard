@@ -50,7 +50,7 @@ async def claim_honey_rewards():
         'gasPrice': web3.eth.gas_price,
         'nonce': web3.eth.get_transaction_count(config['nodeInfo']['operator_address'])
     }
-    tx = contract.functions.getReward().buildTransaction(tx_params)
+    tx = contract.functions.getReward().build_transaction(tx_params)
     signed_tx = web3.eth.account.sign_transaction(tx, PRIVATE_KEY)
     tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
 
