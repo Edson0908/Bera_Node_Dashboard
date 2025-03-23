@@ -44,11 +44,13 @@ async def claim_honey_rewards():
     contract_abi = config.get('contracts', {}).get('BGT Staker', {}).get('abi')
     contract = web3.eth.contract(address=contract_address, abi=contract_abi)
 
-    tx = contract.functions.getReward().buildTransaction()
-    tx['from'] = config['nodeInfo']['operator_address']
-    tx['gas'] = 200000
-    tx['gasPrice'] = web3.eth.gas_price
-    tx['nonce'] = web3.eth.get_transaction_count(tx['from'])
+    tx_params = {
+        'from': config['nodeInfo']['operator_address'],
+        'gas': 200000,
+        'gasPrice': web3.eth.gas_price,
+        'nonce': web3.eth.get_transaction_count(config['nodeInfo']['operator_address'])
+    }
+    tx = contract.functions.getReward().buildTransaction(tx_params)
     signed_tx = web3.eth.account.sign_transaction(tx, PRIVATE_KEY)
     tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
 
