@@ -99,6 +99,15 @@ def process_active_event(blockNumber, bgtAmount):
         value['Records'][-1]['BGT Rewards'] = value['Records'][-1]['Staker BGT Rewards'] - value['Records'][-1]['Commission']
         value['Records'][-1]['Total Boosted'] = current_boosted
         value['Records'][-1]['Boost Weight'] = value['Records'][-1]['Staker Boosted'] / value['Records'][-1]['Total Boosted']
+
+        new_record = {
+            "BERA Staked": value['Records'][-1]['BERA Staked'],
+            "Start Block": blockNumber,
+            "Total Staked": value['Records'][-1]['Total Staked'],
+            "Weight": value['Records'][-1]['Weight'],
+            "Commission Rate": value['Records'][-1]['Commission Rate']
+        }
+        value['Records'].append(new_record)
         
         index += 1
 
