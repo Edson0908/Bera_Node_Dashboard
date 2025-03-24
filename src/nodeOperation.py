@@ -37,7 +37,7 @@ def get_unclaimed_honey_rewards():
     print(f"未领取的honey奖励: {balance}")
     return balance
 
-async def claim_honey_rewards():
+def claim_honey_rewards():
     config = load_config()
     
     contract_address = config.get('contracts', {}).get('BGT Staker', {}).get('address')
@@ -53,15 +53,19 @@ async def claim_honey_rewards():
     tx = contract.functions.getReward().build_transaction(tx_params)
     signed_tx = web3.eth.account.sign_transaction(tx, PRIVATE_KEY)
     tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
+    print(f"交易已发送，交易哈希: {tx_hash.hex()}")
+    print("等待交易确认中...")
 
     # 等待交易确认
     try:
-        receipt = await web3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)  # 120秒超时
+        receipt = web3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)  # 120秒超时
         if receipt['status'] == 1:
-            print(f"交易确认成功，区块号: {receipt['blockNumber']}")
+            print(f"交易确认成功！区块号: {receipt['blockNumber']}")
+            print(f"Gas使用量: {receipt['gasUsed']}")
+            print("奖励已成功领取")
             return receipt
         else:
-            print("交易执行失败")
+            print("交易执行失败，请检查合约状态")
             return None
     except Exception as e:
         print(f"等待交易确认时出错: {str(e)}")
