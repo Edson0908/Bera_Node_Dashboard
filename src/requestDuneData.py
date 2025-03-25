@@ -249,7 +249,8 @@ def update_stake_snapshot(txId):
                 total_staked = value['Records'][-1]['Total Staked'] + new_stake['amount']
                 weight = bera_staked / total_staked
                 if bgt_rewards == 0:
-                    bgt_rewards = bgt_rewards_snapshot(validator_pubkey2, start_block, new_stake['blockNumber'])
+                    bgt_rewards_result = bgt_rewards_snapshot(validator_pubkey2, start_block, new_stake['blockNumber'])
+                    bgt_rewards = bgt_rewards_result[0].get('bgt_rewards', 0)
                 value['Records'][-1]['End Block'] = new_stake['blockNumber']
                 value['Records'][-1]['Total BGT Rewards'] = bgt_rewards
                 value['Records'][-1]['Staker BGT Rewards'] = value['Records'][-1]['Total BGT Rewards'] * value['Records'][-1]['Weight']
@@ -269,7 +270,8 @@ def update_stake_snapshot(txId):
                 total_staked = value['Records'][-1]['Total Staked'] + new_stake['amount']
                 weight = bera_staked / total_staked
                 if bgt_rewards == 0:
-                    bgt_rewards = bgt_rewards_snapshot(validator_pubkey2, start_block, new_stake['blockNumber'])
+                    bgt_rewards_result = bgt_rewards_snapshot(validator_pubkey2, start_block, new_stake['blockNumber'])
+                    bgt_rewards = bgt_rewards_result[0].get('bgt_rewards', 0)
                 value['Records'][-1]['End Block'] = new_stake['blockNumber']
                 value['Records'][-1]['Total BGT Rewards'] = bgt_rewards
                 value['Records'][-1]['Staker BGT Rewards'] = value['Records'][-1]['Total BGT Rewards'] * value['Records'][-1]['Weight']
@@ -355,6 +357,7 @@ def get_total_honey_reward(end_block):
 
     data = utils.get_file_data(saved_file_prefix)
     if data is not None:
+        data = data['results']
         value = data.get(end_block, 0)
     else:
         value = 0

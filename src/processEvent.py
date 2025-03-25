@@ -53,7 +53,7 @@ def process_active_event(blockNumber, bgtAmount):
         if firstActive:
             if index == 0:
                 last_bgt_rewards = bgt_rewards_snapshot(pubkey, value['Records'][-1]['Start Block'], blockNumber)
-            value['Records'][-1]['Total BGT Rewards'] = last_bgt_rewards[0]["bgt_rewards"]
+            value['Records'][-1]['Total BGT Rewards'] = last_bgt_rewards[0].get('bgt_rewards', 0)
             value['Records'][-1]['Staker BGT Rewards'] = value['Records'][-1]['Total BGT Rewards'] * value['Records'][-1]['Weight']
             value['Records'][-1]['Staker Boosted'] = total_bgt_earned + value['Records'][-1]['Staker BGT Rewards']
 

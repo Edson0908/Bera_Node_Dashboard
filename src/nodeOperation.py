@@ -59,13 +59,13 @@ def claim_honey_rewards():
         return None
 
 
-def get_boosted_amount(address):
+def get_boosted_amount(node_address):
     config = utils.load_config()
     contract_address = config.get('contracts', {}).get('BGT Token', {}).get('address')
     contract_abi = config.get('contracts', {}).get('BGT Token', {}).get('abi')
     contract = web3.eth.contract(address=contract_address, abi=contract_abi)
-    amount = contract.functions.boosts(address).call() / (10 ** 18)
-    print(f"节点{address}的boosted amount: {amount}")
+    amount = contract.functions.boosts(node_address).call() / (10 ** 18)
+    print(f"节点{node_address}的boosted amount: {amount}")
 
     return amount
 
