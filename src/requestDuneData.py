@@ -29,7 +29,7 @@ def query_dune_data(query_id, query_parameters):
         execution_id = execution_response.execution_id
         
         # 等待结果
-        max_attempts = 100  # 最多等待100秒
+        max_attempts = 150  # 最多等待150秒
         attempt = 0
         
         while attempt < max_attempts:
