@@ -29,7 +29,7 @@ def query_dune_data(query_id, query_parameters):
         execution_id = execution_response.execution_id
         
         # 等待结果
-        max_attempts = 150  # 最多等待150秒
+        max_attempts = 100  # 最多等待150秒
         attempt = 0
         
         while attempt < max_attempts:
@@ -43,7 +43,7 @@ def query_dune_data(query_id, query_parameters):
                 raise Exception(f'查询失败: {status.state.value}')
             
             print(f"等待查询结果... ({attempt}/{max_attempts})")
-            time.sleep(1)
+            time.sleep(2)
             
         raise TimeoutError("查询超时")
         
