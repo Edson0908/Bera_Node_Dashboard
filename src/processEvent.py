@@ -58,7 +58,7 @@ def process_active_event(blockNumber, bgtAmount):
 
     honeyBalance0 = get_honey_balance(operator_address)
     try:
-        receipt = asyncio.run(claim_honey_rewards(pubkey, blockNumber))
+        receipt = claim_honey_rewards()
         if receipt is None:
             raise Exception("claim honey rewards 失败")
     except Exception as e:
@@ -82,7 +82,7 @@ def process_active_event(blockNumber, bgtAmount):
         if firstActive:
             if index == 0:
                 last_bgt_rewards = bgt_rewards_snapshot(pubkey, value['Records'][-1]['Start Block'], blockNumber)
-            value['Records'][-1]['Total BGT Rewards'] = last_bgt_rewards
+            value['Records'][-1]['Total BGT Rewards'] = last_bgt_rewards[0]["bgt_rewards"]
             value['Records'][-1]['Staker BGT Rewards'] = value['Records'][-1]['Total BGT Rewards'] * value['Records'][-1]['Weight']
             value['Records'][-1]['Staker Boosted'] = total_bgt_earned + value['Records'][-1]['Staker BGT Rewards']
 
@@ -99,6 +99,15 @@ def process_active_event(blockNumber, bgtAmount):
         value['Records'][-1]['BGT Rewards'] = value['Records'][-1]['Staker BGT Rewards'] - value['Records'][-1]['Commission']
         value['Records'][-1]['Total Boosted'] = current_boosted
         value['Records'][-1]['Boost Weight'] = value['Records'][-1]['Staker Boosted'] / value['Records'][-1]['Total Boosted']
+
+        new_record = {
+            "BERA Staked": value['Records'][-1]['BERA Staked'],
+            "Start Block": blockNumber,
+            "Total Staked": value['Records'][-1]['Total Staked'],
+            "Weight": value['Records'][-1]['Weight'],
+            "Commission Rate": value['Records'][-1]['Commission Rate']
+        }
+        value['Records'].append(new_record)
         
         index += 1
 

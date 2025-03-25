@@ -68,7 +68,7 @@ def process_stake_snapshot_data(data):
     for key, value in data.items():
         processed_data[key] = {}
         processed_data[key]['Records'] = []
-
+        processed_data[key]['name'] = value.get('name', key)
         index = 0
         for record in value.get('Records'):
             if record.get('End Block', None) is None:
@@ -119,6 +119,7 @@ def index():
     processed_stakeSnapshotData = process_stake_snapshot_data(stakeSnapshotData)
 
     print(json.dumps(stakeSnapshotData, indent=2, ensure_ascii=False))
+    print(json.dumps(processed_stakeSnapshotData, indent=2, ensure_ascii=False))
   
     
     # 格式化时间戳
@@ -132,5 +133,6 @@ def index():
                          timestamp=formatted_time)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))  # 从环境变量获取端口，默认5000
+    app.run(debug=True, host='0.0.0.0', port=port)
     

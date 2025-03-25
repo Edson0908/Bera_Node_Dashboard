@@ -1,6 +1,5 @@
-python-dotenv==1.0.0
-dune-client==1.7.8
-pytest==7.4.3
-black==23.11.0
-flake8==6.1.0
-flask==3.1.0 
+dune_client==1.7.8
+Flask==3.1.0
+python-dotenv==1.0.1
+web3==7.9.0
+websockets==11.0.2
