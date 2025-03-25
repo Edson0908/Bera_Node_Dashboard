@@ -1,56 +1,27 @@
-import dotenv
-import os
-import json
 import copy
-import asyncio
-from requestDuneData import save_results_to_json, bgt_rewards_snapshot
+import utils
+from requestDuneData import bgt_rewards_snapshot
 from nodeOperation import claim_honey_rewards, get_boosted_amount, get_honey_balance
-# 加载环境变量
-dotenv.load_dotenv(override=True)
 
-DUNE_API_KEY = os.getenv('DUNE_API_KEY')
-DEBUG_MODE = os.getenv('DEBUG_MODE')
-BERA_RPC_URL = os.getenv('BERA_RPC_URL')
-
-def load_config():
-    config_dir = 'config'
-    config_file = os.path.join(config_dir, 'config.json')
-    with open(config_file, 'r', encoding='utf-8') as f:
-        config = json.load(f)
-    return config
 
 def process_active_event(blockNumber, bgtAmount):
 
-    config = load_config()
+    config = utils.load_config()
     pubkey = config['nodeInfo']['pubkey2']
     operator_address = config['nodeInfo']['operator_address']
 
     current_boosted = get_boosted_amount(operator_address)
 
-    stake_file_prefix = "stake_snapshot"
-    honey_file_prefix = "honey_rewards_claimed"
-
-    data_dir = 'data'
-    json_files = [f for f in os.listdir(data_dir) if f.startswith(stake_file_prefix) and f.endswith('.json')]
-
-    latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
-    file_path = os.path.join(data_dir, latest_file)
+    stake_file_prefix = utils.config['save_file_prefix']['stake_snapshot']
+    honey_file_prefix = utils.config['save_file_prefix']['honey_rewards_claimed']
     
     # 读取现有数据
-    with open(file_path, 'r', encoding='utf-8') as f:
-        snapshotData = json.load(f)
-        print(f"成功读取文件: {file_path}")
-        snapshotData = snapshotData['results']
+    snapshotData = utils.get_file_data(stake_file_prefix)
+    snapshotData = snapshotData['results']
 
-    json_files = [f for f in os.listdir(data_dir) if f.startswith(honey_file_prefix) and f.endswith('.json')]
-    if len(json_files) > 0:
-        latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
-        file_path = os.path.join(data_dir, latest_file)
-        
-        with open(file_path, 'r', encoding='utf-8') as f:
-            honeyData = json.load(f)
-            print(f"成功读取文件: {file_path}")
-            honeyData = honeyData['results']
+    honeyData = utils.get_file_data(honey_file_prefix)
+    if honeyData is not None:
+        honeyData = honeyData['results']
     else:
         honeyData = {}
 
@@ -113,8 +84,8 @@ def process_active_event(blockNumber, bgtAmount):
 
     honeyData[blockNumber] = honeyClaimed
 
-    save_results_to_json(snapshotData, stake_file_prefix)
-    save_results_to_json(honeyData, honey_file_prefix)
+    utils.save_results_to_json(snapshotData, stake_file_prefix)
+    utils.save_results_to_json(honeyData, honey_file_prefix)
 
     print("数据已更新并保存")
     return None
@@ -122,7 +93,7 @@ def process_active_event(blockNumber, bgtAmount):
 
 def process_drop_event(blockNumber, bgtAmount, account):
 
-    config = load_config()
+    config = utils.load_config()
 
     operator_address = config['nodeInfo']['operator_address']
     current_boosted = get_boosted_amount(operator_address)
@@ -135,19 +106,10 @@ def process_drop_event(blockNumber, bgtAmount, account):
             stakerAccount = key
             break
     
-    stake_file_prefix = "stake_snapshot"
+    stake_file_prefix = utils.config['save_file_prefix']['stake_snapshot']
 
-    data_dir = 'data'
-    json_files = [f for f in os.listdir(data_dir) if f.startswith(stake_file_prefix) and f.endswith('.json')]
-
-    latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
-    file_path = os.path.join(data_dir, latest_file)
-    
-    # 读取现有数据
-    with open(file_path, 'r', encoding='utf-8') as f:
-        snapshotData = json.load(f)
-        print(f"成功读取文件: {file_path}")
-        snapshotData = snapshotData['results']
+    snapshotData = utils.get_file_data(stake_file_prefix)
+    snapshotData = snapshotData['results']
 
     for key, value in snapshotData.items():
         new_record = copy.copy(value['Records'][-1])
@@ -182,7 +144,7 @@ def process_drop_event(blockNumber, bgtAmount, account):
         new_record['Start Block'] = blockNumber
         value['Records'].append(new_record)
 
-    save_results_to_json(snapshotData, stake_file_prefix)
+    utils.save_results_to_json(snapshotData, stake_file_prefix)
 
     print("数据已更新并保存")
     return None

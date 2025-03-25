@@ -1,23 +1,10 @@
-import json
-import os
 from web3 import Web3
-from dotenv import load_dotenv
-import asyncio
+import utils
 
-load_dotenv(override=True)
+PRIVATE_KEY = utils.PRIVATE_KEY
 
-BERA_RPC_URL = os.getenv('BERA_RPC_URL')
-PRIVATE_KEY = os.getenv('PRIVATE_KEY')
+web3 = Web3(Web3.HTTPProvider(utils.BERA_RPC_URL))
 
-web3 = Web3(Web3.HTTPProvider(BERA_RPC_URL))
-
-
-def load_config():
-    config_dir = 'config'
-    config_file = os.path.join(config_dir, 'config.json')
-    with open(config_file, 'r', encoding='utf-8') as f:
-        config = json.load(f)
-    return config
 
 def get_current_block():
     
@@ -27,7 +14,7 @@ def get_current_block():
     return current_block
 
 def get_unclaimed_honey_rewards():
-    config = load_config()
+    config = utils.load_config()
     address = config['nodeInfo']['operator_address']
    
     contract_address = config.get('contracts', {}).get('BGT Staker', {}).get('address')
@@ -38,7 +25,7 @@ def get_unclaimed_honey_rewards():
     return balance
 
 def claim_honey_rewards():
-    config = load_config()
+    config = utils.load_config()
     
     contract_address = config.get('contracts', {}).get('BGT Staker', {}).get('address')
     contract_abi = config.get('contracts', {}).get('BGT Staker', {}).get('abi')
@@ -73,7 +60,7 @@ def claim_honey_rewards():
 
 
 def get_boosted_amount(address):
-    config = load_config()
+    config = utils.load_config()
     contract_address = config.get('contracts', {}).get('BGT Token', {}).get('address')
     contract_abi = config.get('contracts', {}).get('BGT Token', {}).get('abi')
     contract = web3.eth.contract(address=contract_address, abi=contract_abi)
@@ -84,7 +71,7 @@ def get_boosted_amount(address):
 
 
 def get_honey_balance(address):
-    config = load_config()
+    config = utils.load_config()
     contract_address = config.get('contracts', {}).get('HONEY Token', {}).get('address')
     contract_abi = config.get('contracts', {}).get('HONEY Token', {}).get('abi')
     contract = web3.eth.contract(address=contract_address, abi=contract_abi)
@@ -96,7 +83,7 @@ if __name__ == "__main__":
     #claim_honey_rewards()
     #get_unclaimed_honey_rewards()
 
-    get_boosted_amount('0x40692724326503b8Fdc8472Df7Ee658F4BdbFC89')
+    get_boosted_amount('0x')
 
 
 

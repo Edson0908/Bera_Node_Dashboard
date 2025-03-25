@@ -1,61 +1,25 @@
-import dotenv
-import os
 import json
 import time
-from datetime import datetime
 from dune_client.types import QueryParameter
 from dune_client.client import DuneClient
 from dune_client.query import QueryBase
-from nodeOperation import get_current_block, get_unclaimed_honey_rewards
+import utils
 
-# 加载环境变量
-dotenv.load_dotenv(override=True)
-
-DUNE_API_KEY = os.getenv('DUNE_API_KEY')
-DEBUG_MODE = os.getenv('DEBUG_MODE')
-BERA_RPC_URL = os.getenv('BERA_RPC_URL')
-
-def load_config():
-    config_dir = 'config'
-    config_file = os.path.join(config_dir, 'config.json')
-    with open(config_file, 'r', encoding='utf-8') as f:
-        config = json.load(f)
-    return config
-
-
-def save_results_to_json(results, file_prefix):
-    """将结果保存到JSON文件"""
-    # 创建文件名（使用当前日期）
-    date_str = datetime.now().strftime('%Y%m%d')
-    filename = f"data/{file_prefix}_{date_str}.json"
-    
-    # 确保data目录存在
-    os.makedirs('data', exist_ok=True)
-    
-    # 保存结果到文件
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump({
-            'timestamp': datetime.now().isoformat(),
-            'results': results
-        }, f, ensure_ascii=False, indent=2)
-    
-    print(f"结果已保存到: {filename}")
-    return filename
 
 
 def query_dune_data(query_id, query_parameters):
 
-    if not DUNE_API_KEY:
+    if not utils.DUNE_API_KEY:
         raise ValueError("请在.env文件中设置DUNE_API_KEY")
     
     try:
-        dune = DuneClient(DUNE_API_KEY)
+        dune = DuneClient(utils.DUNE_API_KEY)
         query = QueryBase(
             query_id=query_id,
             params=query_parameters
         )
 
-        if DEBUG_MODE == 'True':
+        if utils.DEBUG_MODE == 'True':
             results = dune.get_latest_result(query_id)
             return results.result.rows
 
@@ -65,7 +29,7 @@ def query_dune_data(query_id, query_parameters):
         execution_id = execution_response.execution_id
         
         # 等待结果
-        max_attempts = 100  # 最多等待60秒
+        max_attempts = 100  # 最多等待100秒
         attempt = 0
         
         while attempt < max_attempts:
@@ -88,7 +52,7 @@ def query_dune_data(query_id, query_parameters):
         return None 
 
 def get_commission_rate(staker, amount):
-    config = load_config()
+    config = utils.load_config()
 
     commission_rate = config['commission_rate']
     staker_info = config['staker_info']
@@ -100,14 +64,14 @@ def get_commission_rate(staker, amount):
 
 def init_stake_snapshot():
 
-    config = load_config()
+    config = utils.load_config()
 
     staker_info = config['staker_info']
 
     processed_data = {}
-    saved_file_prefix = "stake_snapshot"
+    saved_file_prefix = config['save_file_prefix']['stake_snapshot']
     
-    query_id = os.getenv('QUERY_STAKE_BY_PUBKEY')
+    query_id = utils.QUERY_STAKE_BY_PUBKEY
     validator_pubkey1 = config['nodeInfo']['pubkey1']
     validator_pubkey2 = config['nodeInfo']['pubkey2']
     query_parameters = [
@@ -186,11 +150,11 @@ def init_stake_snapshot():
                             break
 
 
-    save_results_to_json(processed_data, saved_file_prefix)
+    utils.save_results_to_json(processed_data, saved_file_prefix)
 
 def bgt_rewards_snapshot(validator_pubkey, start_block, end_block):
 
-    query_id = os.getenv('QUERY_BGT_REWARDS_SNAPSHOT')
+    query_id = utils.QUERY_BGT_REWARDS_SNAPSHOT
     
     query_parameters = [
         QueryParameter.text_type(
@@ -219,9 +183,9 @@ def bgt_rewards_snapshot(validator_pubkey, start_block, end_block):
 
 def validator_overview():
 
-    config = load_config()
-    saved_file_prefix = "validator_overview"
-    query_id = os.getenv('QUERY_VALIDATOR_OVERVIEW')
+    config = utils.load_config()
+    saved_file_prefix = config['save_file_prefix']['validator_overview']
+    query_id = utils.QUERY_VALIDATOR_OVERVIEW
     validator_pubkey1 = config['nodeInfo']['pubkey1']
     validator_pubkey2 = config['nodeInfo']['pubkey2']
     query_parameters = [
@@ -239,7 +203,7 @@ def validator_overview():
     if results:
         print("查询结果：")
         print(json.dumps(results, indent=2, ensure_ascii=False))
-        save_results_to_json(results, saved_file_prefix)    
+        utils.save_results_to_json(results, saved_file_prefix)    
     else:
         print("未能获取查询结果")   
 
@@ -250,14 +214,14 @@ def update_stake_snapshot(txId):
     if txId is None:
         return None
 
-    config = load_config()
+    config = utils.load_config()
 
     validator_pubkey2 = config['nodeInfo']['pubkey2']
 
-    saved_file_prefix = "stake_snapshot"
+    saved_file_prefix = config['save_file_prefix']['stake_snapshot']
 
     try:
-        query_id = os.getenv('QUERY_STAKE_BY_TXID')
+        query_id = utils.QUERY_STAKE_BY_TXID
         query_parameters = [
             QueryParameter.text_type(
                 name="txid",
@@ -270,16 +234,7 @@ def update_stake_snapshot(txId):
 
         """读取最新的 stake_snapshot 文件并更新数据"""
         # 获取最新的文件
-        data_dir = 'data'
-        json_files = [f for f in os.listdir(data_dir) if f.startswith(saved_file_prefix) and f.endswith('.json')]
-    
-        latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
-        file_path = os.path.join(data_dir, latest_file)
-        # 读取现有数据
-        with open(file_path, 'r', encoding='utf-8') as f:
-            existing_data = json.load(f)
-            print(f"成功读取文件: {file_path}")
-        
+        existing_data = utils.get_file_data(saved_file_prefix)
         existing_data = existing_data['results']
 
         bgt_rewards = 0
@@ -339,7 +294,7 @@ def update_stake_snapshot(txId):
             })
 
         # 保存更新后的数据
-        save_results_to_json(existing_data, saved_file_prefix)
+        utils.save_results_to_json(existing_data, saved_file_prefix)
         print("数据已更新并保存")
         return None
         
@@ -352,27 +307,15 @@ def update_stake_snapshot(txId):
 
 def calculate_honey_rewards():
 
-    saved_file_prefix = "stake_snapshot"
-    processed_index_prefix = "processed_index"
+    saved_file_prefix = utils.config['save_file_prefix']['stake_snapshot']
+    processed_index_prefix = utils.config['save_file_prefix']['processed_index']
 
-    data_dir = 'data'
-    json_files = [f for f in os.listdir(data_dir) if f.startswith(saved_file_prefix) and f.endswith('.json')]
+    data = utils.get_file_data(saved_file_prefix)
+    data = data['results']
 
-    latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
-    file_path = os.path.join(data_dir, latest_file)
-    
-    # 读取现有数据
-    with open(file_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-        print(f"成功读取文件: {file_path}")
-        data = data['results']
-
-    json_files = [f for f in os.listdir(data_dir) if f.startswith(processed_index_prefix) and f.endswith('.json')]
-    if json_files:
-        latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
-        file_path = os.path.join(data_dir, latest_file)
-        with open(file_path, 'r', encoding='utf-8') as f:
-            last_processed_record = json.load(f)
+    last_processed_record = utils.get_file_data(processed_index_prefix)
+    if last_processed_record is not None:
+        last_processed_record = last_processed_record['results']
     else:
         last_processed_record = {}
 
@@ -402,31 +345,19 @@ def calculate_honey_rewards():
         value['Total Honey Rewards'] = staker_total_honey_reward
  
      # 保存更新后的数据
-    save_results_to_json(data, saved_file_prefix)
-    save_results_to_json(last_processed_record, processed_index_prefix)
+    utils.save_results_to_json(data, saved_file_prefix)
+    utils.save_results_to_json(last_processed_record, processed_index_prefix)
     print("数据已更新并保存")
     return None
 
 def get_total_honey_reward(end_block):
-    saved_file_prefix = "honey_rewards_claimed"
+    saved_file_prefix = utils.config['save_file_prefix']['honey_rewards_claimed']
 
-    data_dir = 'data'
-    json_files = [f for f in os.listdir(data_dir) if f.startswith(saved_file_prefix) and f.endswith('.json')]
-
-    if json_files is None:
-        return 0
-
-    latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
-    file_path = os.path.join(data_dir, latest_file)
-    
-    # 读取现有数据
-    with open(file_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-        print(f"成功读取文件: {file_path}")
-        data = data['results']
-
-    value = data.get(end_block, 0)
-
+    data = utils.get_file_data(saved_file_prefix)
+    if data is not None:
+        value = data.get(end_block, 0)
+    else:
+        value = 0
 
     return value
 

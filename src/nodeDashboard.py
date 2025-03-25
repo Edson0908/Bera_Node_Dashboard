@@ -1,28 +1,22 @@
 from flask import Flask, render_template
 import json
 import os
+import utils
 from datetime import datetime
-import requestDuneData
+
 
 app = Flask(__name__, template_folder='../templates')
 
 def get_latest_data():
 
+    config = utils.load_config()
+    overview_prefix = config['save_file_prefix']['validator_overview']
+    stake_snapshot_prefix = config['save_file_prefix']['stake_snapshot']
+
     returnData = {}
 
     """获取最新的数据文件"""
-    data_dir = 'data'
-    json_files = [f for f in os.listdir(data_dir) if f.endswith('.json') and f.startswith('validator_overview')]
-    if not json_files:
-        return None, None
-    
-    # 获取最新的文件
-    latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
-    file_path = os.path.join(data_dir, latest_file)
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    
+    data = utils.get_file_data(overview_prefix)
     results = data.get('results', [])
     
     # 定义字段顺序
@@ -43,16 +37,8 @@ def get_latest_data():
     returnData['overviewData'] = ordered_results
 
     """获取最新的 stake_snapshot 数据"""
-    json_files = [f for f in os.listdir(data_dir) if f.endswith('.json') and f.startswith('stake_snapshot')]
-    if not json_files:
-        return None, None
-    
-    # 获取最新的文件
-    latest_file = max(json_files, key=lambda x: os.path.getmtime(os.path.join(data_dir, x)))
-    file_path = os.path.join(data_dir, latest_file)
-
-    with open(file_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
+    data = utils.get_file_data(stake_snapshot_prefix)
+    data = data['results']
     
     returnData['stakeSnapshotData'] = data
 
@@ -88,18 +74,13 @@ def process_stake_snapshot_data(data):
 
     return processed_data
                 
-                
-                
-
-                
+                          
 
 @app.route('/')
 def index():
 
-    config_dir = 'config'
-    config_file = os.path.join(config_dir, 'config.json')
-    with open(config_file, 'r', encoding='utf-8') as f:
-        config = json.load(f)
+    
+    config = utils.load_config()
 
     #requestDuneData.update_stake_snapshot()
 
@@ -114,7 +95,7 @@ def index():
     stakeSnapshotHeaders = config['page_config']['stake_snapshot_header']
 
     overviewData = data['overviewData']
-    stakeSnapshotData = data['stakeSnapshotData']['results']
+    stakeSnapshotData = data['stakeSnapshotData']
 
     processed_stakeSnapshotData = process_stake_snapshot_data(stakeSnapshotData)
 

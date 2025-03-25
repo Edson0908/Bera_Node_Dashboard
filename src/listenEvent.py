@@ -10,7 +10,7 @@ import logging
 from datetime import datetime
 import signal
 from requestDuneData import update_stake_snapshot
-#from nodeOperation import claim_honey_rewards
+import utils
 
 # 创建日志目录
 os.makedirs('logs', exist_ok=True)
@@ -418,18 +418,7 @@ class BeraWebSocketListener:
             logger.error("无法启动监听器：连接失败")
 
 async def main():
-    config_dir = 'config'
-    config_file = os.path.join(config_dir, 'config.json')
-    
-    try:
-        with open(config_file, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-    except FileNotFoundError:
-        logger.error(f"配置文件不存在: {config_file}")
-        return
-    except json.JSONDecodeError:
-        logger.error(f"配置文件格式错误: {config_file}")
-        return
+    config = utils.load_config()
     
     beconDeposit_address = config.get('contracts', {}).get('Beacon Deposit', {}).get('address')
     beconDeposit_abi = config.get('contracts', {}).get('Beacon Deposit', {}).get('abi')
