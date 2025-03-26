@@ -309,8 +309,10 @@ def update_stake_snapshot(txId):
 
 def calculate_honey_rewards():
 
-    saved_file_prefix = utils.config['save_file_prefix']['stake_snapshot']
-    processed_index_prefix = utils.config['save_file_prefix']['processed_index']
+    config = utils.load_config()
+
+    saved_file_prefix = config['save_file_prefix']['stake_snapshot']
+    processed_index_prefix = config['save_file_prefix']['processed_index']
 
     data = utils.get_file_data(saved_file_prefix)
     data = data['results']
@@ -353,7 +355,10 @@ def calculate_honey_rewards():
     return None
 
 def get_total_honey_reward(end_block):
-    saved_file_prefix = utils.config['save_file_prefix']['honey_rewards_claimed']
+
+    config = utils.load_config()
+
+    saved_file_prefix = config['save_file_prefix']['honey_rewards_claimed']
 
     data = utils.get_file_data(saved_file_prefix)
     if data is not None:

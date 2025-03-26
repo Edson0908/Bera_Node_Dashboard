@@ -12,8 +12,8 @@ def process_active_event(blockNumber, bgtAmount):
 
     current_boosted = get_boosted_amount(operator_address)
 
-    stake_file_prefix = utils.config['save_file_prefix']['stake_snapshot']
-    honey_file_prefix = utils.config['save_file_prefix']['honey_rewards_claimed']
+    stake_file_prefix = config['save_file_prefix']['stake_snapshot']
+    honey_file_prefix = config['save_file_prefix']['honey_rewards_claimed']
     
     # 读取现有数据
     snapshotData = utils.get_file_data(stake_file_prefix)
@@ -106,7 +106,7 @@ def process_drop_event(blockNumber, bgtAmount, account):
             stakerAccount = key
             break
     
-    stake_file_prefix = utils.config['save_file_prefix']['stake_snapshot']
+    stake_file_prefix = config['save_file_prefix']['stake_snapshot']
 
     snapshotData = utils.get_file_data(stake_file_prefix)
     snapshotData = snapshotData['results']

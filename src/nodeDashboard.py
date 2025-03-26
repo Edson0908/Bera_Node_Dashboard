@@ -38,13 +38,14 @@ def get_latest_data():
 
     """获取最新的 stake_snapshot 数据"""
     data = utils.get_file_data(stake_snapshot_prefix)
+    timestamp = data['timestamp']
     data = data['results']
     
     returnData['stakeSnapshotData'] = data
 
     #print(json.dumps(returnData, indent=2, ensure_ascii=False))
     
-    return returnData, data.get('timestamp')
+    return returnData, timestamp
 
 
 def process_stake_snapshot_data(data):
