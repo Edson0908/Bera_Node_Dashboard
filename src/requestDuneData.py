@@ -309,6 +309,7 @@ def update_stake_snapshot(txId):
 
 def calculate_honey_rewards():
 
+
     config = utils.load_config()
 
     saved_file_prefix = config['save_file_prefix']['stake_snapshot']
@@ -334,20 +335,24 @@ def calculate_honey_rewards():
         staker_total_honey_reward = value.get('Total Honey Rewards', 0)
 
         while index < len(value['Records']):
+            
             record = value['Records'][index]
+            
             if record.get('Total Boosted', None) is None:
-                break
+                index += 1
+                continue
             else:
-                record['Total Honey Rewards'] = get_total_honey_reward(record.get('End Block')) #节点在该时段获得的总HONEY
+                record['Total Honey Rewards'] = get_total_honey_reward(str(record.get('End Block'))) #节点在该时段获得的总HONEY
                 record['Staker Honey Rewards'] = record['Total Honey Rewards'] * record['Boost Weight'] #Staker在该时段获得的HONEY
                 record['Honey Commission'] = record['Staker Honey Rewards'] * record['Commission Rate'] #Staker在该时段的HONEY奖励
                 record['Honey Rewards'] = record['Staker Honey Rewards'] - record['Honey Commission'] #Staker在该时段扣除commission后的HONEY奖励
                 staker_total_honey_reward += record['Honey Rewards'] #Staker lifetime HONEY 奖励
                 index += 1
 
-        last_processed_record[key] = index
+        last_processed_record[key] = index - 1
         value['Total Honey Rewards'] = staker_total_honey_reward
- 
+    
+    # print(json.dumps(data, indent=2, ensure_ascii=False))
      # 保存更新后的数据
     utils.save_results_to_json(data, saved_file_prefix)
     utils.save_results_to_json(last_processed_record, processed_index_prefix)
@@ -361,6 +366,9 @@ def get_total_honey_reward(end_block):
     saved_file_prefix = config['save_file_prefix']['honey_rewards_claimed']
 
     data = utils.get_file_data(saved_file_prefix)
+    print(end_block)
+    print(data)
+
     if data is not None:
         data = data['results']
         value = data.get(end_block, 0)
@@ -373,7 +381,7 @@ def get_total_honey_reward(end_block):
 
 if __name__ == "__main__":
 
-    validator_overview()
-    init_stake_snapshot()
+    #validator_overview()
+    #init_stake_snapshot()
     
-    #update_stake_snapshot()
+    calculate_honey_rewards()
