@@ -177,7 +177,7 @@
         </div>
         <div class="table-container">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="mb-0">BGT Rewards</h3>
+                <h3 class="mb-0">BGT Rewards <span id="totalBGTEarned" style="color: #4CAF50; margin-left: 10px;"></span></h3>
                 <div class="dropdown">
                     <button class="page-button dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                         Select
@@ -426,11 +426,24 @@
                 rows.forEach(row => {
                     row.style.display = (row.getAttribute('data-staker') === staker) ? '' : 'none';
                 });
+
+                // 更新Total BGT Earned
+                const stakerData = {{ stakeSnapshotData | tojson }}[staker];
+                if (stakerData && stakerData['Total BGT Earned']) {
+                    const totalBGT = stakerData['Total BGT Earned'].toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                    document.getElementById('totalBGTEarned').textContent = `Total: ${totalBGT} BGT`;
+                } else {
+                    document.getElementById('totalBGTEarned').textContent = '';
+                }
             });
         });
 
-        // 设置下拉菜单的初始文本
+        // 设置下拉菜单的初始文本和清空Total BGT
         document.getElementById('dropdownMenuButton').textContent = 'Select';
+        document.getElementById('totalBGTEarned').textContent = '';
     </script>
 </body>
 </html> 
