@@ -3,7 +3,7 @@
 import sys
 import dotenv
 import os
-from processEvent import process_active_event, process_drop_event  # 替换为 B 中定义函数的模块名
+from processEvent import process_active_event, process_drop_event, claim_incentive  # 替换为 B 中定义函数的模块名
 
 dotenv.load_dotenv(override=True)  # 加载 B 自己的 .env
 
@@ -24,6 +24,8 @@ def main():
             return
         account = sys.argv[4]
         process_drop_event(blockNumber, bgtAmount, account)
+    elif action == "claim":
+        claim_incentive()
     else:
         print(f"Unknown action: {action}")
 
