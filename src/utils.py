@@ -17,6 +17,7 @@ QUERY_BGT_REWARDS_SNAPSHOT = os.getenv('QUERY_BGT_REWARDS_SNAPSHOT')
 QUERY_HONEY_TRANSFER = os.getenv('QUERY_HONEY_TRANSFER')
 
 PRIVATE_KEY = os.getenv('PRIVATE_KEY')
+DEBANK_ACCESS_KEY = os.getenv('DEBANK_ACCESS_KEY')
 
 
 def load_config():
@@ -59,4 +60,23 @@ def get_file_data(file_prefix):
     except Exception as e:
         print(f"获取文件数据失败: {e}")
         return None
+
+
+def update_json_file(filename, data):   
+
+    os.makedirs('data', exist_ok=True)
+    file_path = os.path.join('data', filename)
     
+    existing_data = {}
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as f:
+            existing_data = json.load(f)
+    
+    existing_data.update(data)       
+
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(existing_data, f, ensure_ascii=False, indent=2)
+    
+    print(f"结果已保存到: {file_path}")
+    return file_path
+

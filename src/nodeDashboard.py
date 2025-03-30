@@ -3,7 +3,13 @@ import json
 import os
 import utils
 from datetime import datetime
+from dotenv import load_dotenv
 
+# 加载环境变量
+load_dotenv()
+
+# 获取AccessKey
+DEBANK_ACCESS_KEY = os.getenv('DEBANK_ACCESS_KEY')
 
 app = Flask(__name__, template_folder='../templates')
 
@@ -115,6 +121,10 @@ def index():
                          stakeSnapshotHeaders=stakeSnapshotHeaders,
                          stakeSnapshotData=processed_stakeSnapshotData,
                          timestamp=formatted_time)
+
+@app.route('/operator')
+def operator():
+    return render_template('operator.html', debank_access_key=DEBANK_ACCESS_KEY)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))  # 从环境变量获取端口，默认5000

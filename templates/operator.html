@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operator Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@web3uikit/core@latest/dist/web3uikit.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.9.0/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        body { 
+            background-color: #0C0C0C;
+            color: #FFFFFF;
+            padding: 20px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            position: relative;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 500;
+        }
+        .wallet-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .card {
+            background: #151515;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .connect-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .connect-button:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+        .disconnect-button {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .disconnect-button:hover {
+            background: #cc0000;
+            transform: translateY(-1px);
+        }
+        .transfer-button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 10px;
+        }
+        .transfer-button:hover {
+            background: #1976D2;
+            transform: translateY(-1px);
+        }
+        .transfer-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .token-list {
+            margin-top: 30px;
+        }
+        .token-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #2D2D2D;
+            transition: background-color 0.2s ease;
+        }
+        .token-item:hover {
+            background-color: #1a1a1a;
+        }
+        .token-item:last-child {
+            border-bottom: none;
+        }
+        .token-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .token-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+            accent-color: #4CAF50;
+        }
+        .token-symbol {
+            font-weight: 600;
+            color: #4CAF50;
+            font-size: 1.1rem;
+        }
+        .token-name {
+            color: #808080;
+            font-size: 0.9rem;
+        }
+        .token-balance {
+            font-family: 'Inter', monospace;
+            color: #FFFFFF;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #808080;
+            font-size: 1.1rem;
+        }
+        .error-message {
+            color: #ff4444;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: rgba(255, 68, 68, 0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        #wallet-info {
+            background-color: #1a1a1a;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        #wallet-info p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #808080;
+        }
+        #wallet-address {
+            color: #4CAF50;
+            font-family: 'Inter', monospace;
+            font-weight: 500;
+        }
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: #FFFFFF;
+        }
+        .transfer-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            position: relative;
+            background: #151515;
+            margin: 15% auto;
+            padding: 30px;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin: 0;
+        }
+        .close-button {
+            background: none;
+            border: none;
+            color: #808080;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #808080;
+        }
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            padding-right: 80px; /* 为Max按钮留出空间 */
+            border: 1px solid #2D2D2D;
+            border-radius: 6px;
+            background: #1a1a1a;
+            color: #FFFFFF;
+            font-size: 1rem;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        .max-button {
+            position: absolute;
+            right: 8px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        .max-button:hover {
+            background: #45a049;
+        }
+        .submit-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+        .submit-button:hover {
+            background: #45a049;
+        }
+        .submit-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Operator Dashboard</h2>
+            <div class="wallet-buttons">
+                <button id="connect-button" class="connect-button">Connect Wallet</button>
+                <button id="disconnect-button" class="disconnect-button" style="display: none;">Disconnect</button>
+                <button id="transfer-button" class="transfer-button" style="display: none;" disabled>Transfer</button>
+            </div>
+        </div>
+        <div class="card">
+            <div id="wallet-info" style="display: none;">
+                <p>Connected Address: <span id="wallet-address"></span></p>
+            </div>
+            <div id="token-section" style="display: none;">
+                <h3>Token Balances</h3>
+                <div id="token-list" class="token-list">
+                    <!-- Token balances will be displayed here -->
+                </div>
+            </div>
+            <div id="loading" class="loading" style="display: none;">
+                Loading token balances...
+            </div>
+            <div id="error" class="error-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Transfer Modal -->
+    <div id="transfer-modal" class="transfer-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Transfer Tokens</h3>
+                <button class="close-button" id="close-modal">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Recipient Address</label>
+                <input type="text" id="recipient-address" class="form-input" placeholder="0x...">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Amount</label>
+                <div class="input-group">
+                    <input type="number" id="transfer-amount" class="form-input" placeholder="0.0" step="any">
+                    <button class="max-button" id="max-button">Max</button>
+                </div>
+            </div>
+            <button id="submit-transfer" class="submit-button" disabled>Submit Transfer</button>
+        </div>
+    </div>
+
+    <script>
+        let currentAccount = null;
+        let selectedToken = null;
+        let selectedTokenBalance = null;
+        const connectButton = document.getElementById('connect-button');
+        const disconnectButton = document.getElementById('disconnect-button');
+        const transferButton = document.getElementById('transfer-button');
+        const walletInfo = document.getElementById('wallet-info');
+        const walletAddress = document.getElementById('wallet-address');
+        const tokenSection = document.getElementById('token-section');
+        const tokenList = document.getElementById('token-list');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const transferModal = document.getElementById('transfer-modal');
+        const closeModal = document.getElementById('close-modal');
+        const recipientAddress = document.getElementById('recipient-address');
+        const transferAmount = document.getElementById('transfer-amount');
+        const maxButton = document.getElementById('max-button');
+        const submitTransfer = document.getElementById('submit-transfer');
+
+        // 连接钱包
+        async function connectWallet() {
+            try {
+                if (!window.ethereum) {
+                    throw new Error('请安装 MetaMask!');
+                }
+
+                // 使用 eth_requestAccounts 请求连接
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts'
+                });
+                
+                if (accounts && accounts.length > 0) {
+                    currentAccount = accounts[0];
+                    await updateUI();
+                }
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+
+        // 断开连接
+        async function disconnectWallet() {
+            try {
+                if (window.ethereum) {
+                    // 请求用户撤销权限
+                    await window.ethereum.request({
+                        method: 'wallet_revokePermissions',
+                        params: [{ eth_accounts: {} }]
+                    });
+                    
+                    // 清除当前账户
+                    currentAccount = null;
+                    
+                    // 重置UI
+                    connectButton.style.display = 'block';
+                    disconnectButton.style.display = 'none';
+                    transferButton.style.display = 'none';
+                    walletInfo.style.display = 'none';
+                    tokenSection.style.display = 'none';
+                    tokenList.innerHTML = '';
+                }
+            } catch (err) {
+                console.log('Disconnect error:', err);
+                // 即使出错也重置UI
+                connectButton.style.display = 'block';
+                disconnectButton.style.display = 'none';
+                transferButton.style.display = 'none';
+                walletInfo.style.display = 'none';
+                tokenSection.style.display = 'none';
+                tokenList.innerHTML = '';
+            }
+        }
+
+        // 获取代币余额
+        async function fetchTokenBalances() {
+            try {
+                loading.style.display = 'block';
+                error.style.display = 'none';
+                tokenList.innerHTML = '';
+
+                console.log('Fetching token balances for address:', currentAccount);
+
+                // 调用 DeBank API
+                const response = await fetch(`https://pro-openapi.debank.com/v1/user/token_list?id=${currentAccount}&chain_id=bera&is_all=false`, {
+                    headers: {
+                        'accept': 'application/json',
+                        'AccessKey': '{{ debank_access_key }}'
+                    }
+                });
+                
+                console.log('API Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error:', errorText);
+                    throw new Error(`获取代币余额失败: ${response.status} ${errorText}`);
+                }
+
+                const tokens = await response.json();
+                console.log('Received tokens:', tokens);
+                
+                if (!Array.isArray(tokens)) {
+                    console.error('Invalid response format:', tokens);
+                    throw new Error('API返回数据格式错误');
+                }
+
+                if (tokens.length === 0) {
+                    tokenList.innerHTML = '<div class="token-item">没有找到代币余额</div>';
+                    loading.style.display = 'none';
+                    return;
+                }
+                
+                // 显示代币余额
+                tokens.forEach(token => {
+                    console.log('Processing token:', token);
+                    try {
+                        // 使用 BigInt 处理大数字
+                        const balance = BigInt(token.raw_amount || '0');
+                        const decimals = parseInt(token.decimals || '18');
+                        
+                        // 计算实际余额
+                        const actualBalance = Number(balance) / Math.pow(10, decimals);
+                        console.log('Token balance:', actualBalance);
+                        
+                        const tokenItem = document.createElement('div');
+                        tokenItem.className = 'token-item';
+                        tokenItem.innerHTML = `
+                            <div class="token-info">
+                                <input type="checkbox" class="token-checkbox" id="token-${token.id || token.symbol}" data-balance="${actualBalance}" data-address="${token.id}" data-decimals="${token.decimals}">
+                                <span class="token-symbol">${token.symbol || 'Unknown'}</span>
+                                <span class="token-name">${token.name || ''}</span>
+                            </div>
+                            <div class="token-balance">
+                                ${actualBalance.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 4
+                                })}
+                            </div>
+                        `;
+                        tokenList.appendChild(tokenItem);
+                    } catch (err) {
+                        console.error('Error processing token:', token, err);
+                    }
+                });
+
+                loading.style.display = 'none';
+            } catch (err) {
+                console.error('Error in fetchTokenBalances:', err);
+                showError(err.message);
+                loading.style.display = 'none';
+            }
+        }
+
+        // 更新UI显示
+        async function updateUI() {
+            connectButton.style.display = 'none';
+            disconnectButton.style.display = 'block';
+            transferButton.style.display = 'flex';
+            transferButton.disabled = true;
+            walletInfo.style.display = 'block';
+            walletAddress.textContent = `${currentAccount.slice(0, 6)}...${currentAccount.slice(-4)}`;
+            tokenSection.style.display = 'block';
+            // 获取代币余额
+            await fetchTokenBalances();
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            error.textContent = message;
+            error.style.display = 'block';
+        }
+
+        // 添加事件监听器
+        connectButton.addEventListener('click', connectWallet);
+        disconnectButton.addEventListener('click', disconnectWallet);
+        transferButton.addEventListener('click', () => {
+            const checkedCheckbox = document.querySelector('.token-checkbox:checked');
+            if (checkedCheckbox) {
+                const tokenId = checkedCheckbox.id.replace('token-', '');
+                selectedToken = tokenId;
+                selectedTokenBalance = parseFloat(checkedCheckbox.dataset.balance);
+                transferModal.style.display = 'block';
+                transferAmount.value = '';
+                recipientAddress.value = '';
+                submitTransfer.disabled = true;
+            }
+        });
+        closeModal.addEventListener('click', () => {
+            transferModal.style.display = 'none';
+            selectedToken = null;
+            selectedTokenBalance = null;
+        });
+        maxButton.addEventListener('click', () => {
+            if (selectedTokenBalance) {
+                transferAmount.value = selectedTokenBalance;
+                validateForm();
+            }
+        });
+        recipientAddress.addEventListener('input', validateForm);
+        transferAmount.addEventListener('input', validateForm);
+
+        // 检查是否已经连接
+        async function checkConnection() {
+            if (window.ethereum) {
+                try {
+                    // 使用 eth_accounts 检查当前连接状态
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts && accounts.length > 0) {
+                        currentAccount = accounts[0];
+                        await updateUI();
+                    }
+                } catch (err) {
+                    console.log('No wallet connected');
+                    // 如果获取账户失败，重置UI
+                    connectButton.style.display = 'block';
+                    disconnectButton.style.display = 'none';
+                    transferButton.style.display = 'none';
+                    walletInfo.style.display = 'none';
+                    tokenSection.style.display = 'none';
+                    tokenList.innerHTML = '';
+                }
+            }
+        }
+
+        // 监听账户变化
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', async (accounts) => {
+                if (accounts.length === 0) {
+                    // 用户断开连接
+                    currentAccount = null;
+                    connectButton.style.display = 'block';
+                    disconnectButton.style.display = 'none';
+                    transferButton.style.display = 'none';
+                    walletInfo.style.display = 'none';
+                    tokenSection.style.display = 'none';
+                    tokenList.innerHTML = '';
+                } else {
+                    // 用户切换账户
+                    currentAccount = accounts[0];
+                    // 清空之前的代币列表
+                    tokenList.innerHTML = '';
+                    // 更新UI并获取新的代币余额
+                    await updateUI();
+                }
+            });
+        }
+
+        // 页面加载时检查连接状态
+        checkConnection();
+
+        // 更新Transfer按钮状态
+        function updateTransferButton() {
+            const checkboxes = document.querySelectorAll('.token-checkbox:checked');
+            transferButton.disabled = checkboxes.length !== 1;
+            transferButton.style.display = currentAccount ? 'flex' : 'none';
+        }
+
+        // 监听复选框变化
+        tokenList.addEventListener('change', (event) => {
+            if (event.target.classList.contains('token-checkbox')) {
+                // 取消其他复选框的选中状态
+                document.querySelectorAll('.token-checkbox').forEach(checkbox => {
+                    if (checkbox !== event.target) {
+                        checkbox.checked = false;
+                    }
+                });
+                updateTransferButton();
+            }
+        });
+
+        // 验证表单
+        function validateForm() {
+            const isValidAddress = /^0x[a-fA-F0-9]{40}$/.test(recipientAddress.value);
+            const amount = parseFloat(transferAmount.value);
+            const isValidAmount = amount > 0 && amount <= selectedTokenBalance;
+            submitTransfer.disabled = !isValidAddress || !isValidAmount;
+        }
+
+        // 提交转账
+        submitTransfer.addEventListener('click', async () => {
+            try {
+                const amount = transferAmount.value;
+                const to = recipientAddress.value;
+                
+                // 获取选中的代币信息
+                const checkedCheckbox = document.querySelector('.token-checkbox:checked');
+                const tokenId = checkedCheckbox.id.replace('token-', '');
+                const tokenAddress = checkedCheckbox.dataset.address;
+                const tokenDecimals = parseInt(checkedCheckbox.dataset.decimals);
+                
+                // 创建Web3实例
+                const web3 = new Web3(window.ethereum);
+                
+                // 获取代币合约ABI（这里使用标准的ERC20 ABI）
+                const tokenABI = [
+                    {
+                        "constant": false,
+                        "inputs": [
+                            {
+                                "name": "_to",
+                                "type": "address"
+                            },
+                            {
+                                "name": "_value",
+                                "type": "uint256"
+                            }
+                        ],
+                        "name": "transfer",
+                        "outputs": [
+                            {
+                                "name": "",
+                                "type": "bool"
+                            }
+                        ],
+                        "payable": false,
+                        "stateMutability": "nonpayable",
+                        "type": "function"
+                    },
+                    {
+                        "constant": true,
+                        "inputs": [],
+                        "name": "decimals",
+                        "outputs": [
+                            {
+                                "name": "",
+                                "type": "uint8"
+                            }
+                        ],
+                        "payable": false,
+                        "stateMutability": "view",
+                        "type": "function"
+                    },
+                    {
+                        "constant": true,
+                        "inputs": [
+                            {
+                                "name": "_owner",
+                                "type": "address"
+                            }
+                        ],
+                        "name": "balanceOf",
+                        "outputs": [
+                            {
+                                "name": "balance",
+                                "type": "uint256"
+                            }
+                        ],
+                        "payable": false,
+                        "stateMutability": "view",
+                        "type": "function"
+                    }
+                ];
+                
+                // 创建代币合约实例
+                const tokenContract = new web3.eth.Contract(tokenABI, tokenAddress);
+                
+                // 检查余额是否足够
+                const balance = await tokenContract.methods.balanceOf(currentAccount).call();
+                const amountInSmallestUnit = BigInt(amount * Math.pow(10, tokenDecimals));
+                if (amountInSmallestUnit > BigInt(balance)) {
+                    throw new Error('余额不足');
+                }
+                
+                // 发送转账交易
+                const tx = await tokenContract.methods.transfer(to, amountInSmallestUnit.toString())
+                    .send({ from: currentAccount });
+                
+                console.log('Transfer transaction:', tx);
+                
+                // 关闭模态框
+                transferModal.style.display = 'none';
+                selectedToken = null;
+                selectedTokenBalance = null;
+                
+                // 刷新代币余额
+                await fetchTokenBalances();
+                
+                // 显示成功消息
+                showSuccess('转账成功！');
+            } catch (err) {
+                console.error('Transfer error:', err);
+                showError(err.message || '转账失败');
+            }
+        });
+
+        // 显示成功信息
+        function showSuccess(message) {
+            error.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
+            error.style.color = '#4CAF50';
+            error.textContent = message;
+            error.style.display = 'block';
+            setTimeout(() => {
+                error.style.display = 'none';
+                error.style.backgroundColor = 'rgba(255, 68, 68, 0.1)';
+                error.style.color = '#ff4444';
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 
