@@ -83,8 +83,7 @@ def get_boost_weight(block_number):
         return stakers_boost_weight
     return None
     
-#distribute_incentive()
-get_boost_weight(2581404)
-balance = nodeOperation.get_raw_balance('0x7905e5d80722702b7c1816b3c38b6a893ed809bd', '0x6969696969696969696969696969696969696969')
-print(balance)
+if __name__ == "__main__":
+
+    distribute_incentive()
 
