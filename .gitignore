@@ -27,3 +27,5 @@ data/
 info.txt
 
 config/config-test.json
+src/testWallet.py
+

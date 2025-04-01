@@ -21,6 +21,7 @@ def get_unclaimed_honey_rewards():
     address = config['nodeInfo']['operator_address']
    
     contract_address = config.get('contracts', {}).get('BGT Staker', {}).get('address')
+    contract_address = Web3.to_checksum_address(contract_address)
     contract_abi = config.get('contracts', {}).get('BGT Staker', {}).get('abi')
     contract = web3.eth.contract(address=contract_address, abi=contract_abi)
     balance = contract.functions.earned(address).call() / (10 ** 18)
@@ -31,6 +32,7 @@ def claim_honey_rewards():
     config = utils.load_config()
     
     contract_address = config.get('contracts', {}).get('BGT Staker', {}).get('address')
+    contract_address = Web3.to_checksum_address(contract_address)
     contract_abi = config.get('contracts', {}).get('BGT Staker', {}).get('abi')
     contract = web3.eth.contract(address=contract_address, abi=contract_abi)
 
@@ -63,6 +65,7 @@ def claim_honey_rewards():
 
 
 def get_boosted_amount(node_address):
+    node_address = Web3.to_checksum_address(node_address)
     config = utils.load_config()
     contract_address = config.get('contracts', {}).get('BGT Token', {}).get('address')
     contract_abi = config.get('contracts', {}).get('BGT Token', {}).get('abi')
@@ -74,14 +77,24 @@ def get_boosted_amount(node_address):
 
 
 def get_honey_balance(address):
+    address = Web3.to_checksum_address(address)
     config = utils.load_config()
     contract_address = config.get('contracts', {}).get('HONEY Token', {}).get('address')
+    contract_address = Web3.to_checksum_address(contract_address)
     contract_abi = config.get('contracts', {}).get('HONEY Token', {}).get('abi')
     contract = web3.eth.contract(address=contract_address, abi=contract_abi)
     balance = contract.functions.balanceOf(address).call() / (10 ** 18)
     
     return balance
 
+def get_raw_balance(address, token_address):
+    address = Web3.to_checksum_address(address)
+    token_address = Web3.to_checksum_address(token_address)
+    config = utils.load_config()
+    contract_abi = config.get('contracts', {}).get('HONEY Token', {}).get('abi')
+    contract = web3.eth.contract(address=token_address, abi=contract_abi)
+    balance = contract.functions.balanceOf(address).call()
+    return balance
 
 def claim_incentive():
     
@@ -89,6 +102,7 @@ def claim_incentive():
     
     # 获取合约地址和ABI
     contract_address = config.get('contracts', {}).get('Incentive Distribution', {}).get('address')
+    contract_address = Web3.to_checksum_address(contract_address)
     contract_abi = config.get('contracts', {}).get('Incentive Distribution', {}).get('abi')
     filename = f"{config['save_file_prefix']['incentive_data']}.json"
     
@@ -98,7 +112,7 @@ def claim_incentive():
     
     # 获取操作者地址
     operator_address = config['nodeInfo']['operator_address']
-    
+    operator_address = Web3.to_checksum_address(operator_address)
     try:
 
         proof_data = fetch_proof()
@@ -155,7 +169,9 @@ def claim_incentive():
             print(f"交易确认成功！区块号: {receipt['blockNumber']}")
             print(f"Gas使用量: {receipt['gasUsed']}")
             print("奖励已成功领取")
-            incentive_data = {receipt['blockNumber']: proof_data}
+            reward_data = {'rewards': proof_data}
+            incentive_data = {receipt['blockNumber']: reward_data}
+            incentive_data[receipt['blockNumber']]['distributed'] = False
             # 保存incentive数据到文件
             utils.update_json_file(filename, incentive_data)
             return receipt
@@ -221,6 +237,77 @@ def fetch_proof(account=None, validator=None):
         print(f"获取proof数据时出错: {str(e)}")
         return None
 
+def transfer_erc20_token(token_address, to_address, amount):
+
+
+    config = utils.load_config()
+    
+    # 确保地址是校验和格式
+    token_address = Web3.to_checksum_address(token_address)
+    to_address = Web3.to_checksum_address(to_address)
+    
+    # 获取ABI
+    contract_abi = config.get('contracts', {}).get('HONEY Token', {}).get('abi')
+    
+    if not contract_abi:
+        print("错误：未找到ERC20代币合约ABI")
+        return None
+    
+    # 获取操作者地址
+    operator_address = config['nodeInfo']['operator_address']
+    operator_address = Web3.to_checksum_address(operator_address)
+    
+    try:
+        # 创建合约实例
+        contract = web3.eth.contract(address=token_address, abi=contract_abi)
+        
+        # 构建交易参数
+        tx_params = {
+            'from': operator_address,
+            'gas': 100000,  # 设置gas限制
+            'gasPrice': web3.eth.gas_price,
+            'nonce': web3.eth.get_transaction_count(operator_address)
+        }
+
+        balance = get_raw_balance(operator_address, token_address)
+        if balance < amount:
+            print(f"余额不足，当前余额: {balance}")
+            amount = balance
+        
+        # 构建交易
+        tx = contract.functions.transfer(to_address, amount).build_transaction(tx_params)
+        
+        # 签名交易
+        signed_tx = web3.eth.account.sign_transaction(tx, PRIVATE_KEY)
+        
+        # 发送交易
+        # 处理不同版本的web3.py
+        try:
+            # 新版本web3.py
+            tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        except AttributeError:
+            # 旧版本web3.py
+            tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
+            
+        print(f"交易已发送，交易哈希: {tx_hash.hex()}")
+        print("等待交易确认中...")
+        
+        # 等待交易确认
+        receipt = web3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)  # 120秒超时
+        
+        if receipt['status'] == 1:
+            print(f"交易确认成功！区块号: {receipt['blockNumber']}")
+            print(f"Gas使用量: {receipt['gasUsed']}")
+            print("代币转账成功")
+            return tx_hash
+        else:
+            print("交易执行失败，请检查合约状态")
+            return None
+            
+    except Exception as e:
+        print(f"发送交易时出错: {str(e)}")
+        return None
+
 
 if __name__ == "__main__":
     #claim_honey_rewards()
@@ -229,4 +316,5 @@ if __name__ == "__main__":
     #get_boosted_amount('0x')
     #fetch_proof()
     #claim_incentive_test()
+    # 测试加载钱包
     pass
