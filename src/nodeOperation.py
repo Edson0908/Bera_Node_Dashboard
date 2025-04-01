@@ -299,7 +299,7 @@ def transfer_erc20_token(token_address, to_address, amount):
             print(f"交易确认成功！区块号: {receipt['blockNumber']}")
             print(f"Gas使用量: {receipt['gasUsed']}")
             print("代币转账成功")
-            return tx_hash
+            return tx_hash.hex()
         else:
             print("交易执行失败，请检查合约状态")
             return None

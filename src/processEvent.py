@@ -88,7 +88,7 @@ def process_active_event(blockNumber, bgtAmount):
     utils.save_results_to_json(honeyData, honey_file_prefix)
 
     print("数据已更新并保存")
-    return None
+    return honeyClaimed
 
 
 def process_drop_event(blockNumber, bgtAmount, account):
