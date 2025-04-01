@@ -71,6 +71,7 @@ def get_boost_weight(block_number):
     results = stake_snapshot.get('results', {})
 
     stakers_boost_weight = {}
+    block_number = int(block_number)  # 确保 block_number 是整数类型
 
     for staker, records in results.items():
         for record in records.get('Records', []):
