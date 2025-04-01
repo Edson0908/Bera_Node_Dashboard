@@ -68,8 +68,7 @@ def distribute_incentive():
                 
                 while True:
                     try:
-                        # tx_hash = nodeOperation.transfer_erc20_token(reward.get('token'), reward_address, amount)
-                        tx_hash = "0x123456"
+                        tx_hash = nodeOperation.transfer_erc20_token(reward.get('token'), reward_address, amount)
                         if tx_hash is not None:
                             reward['transfer'][staker] = {
                                 'tx_hash': tx_hash,
