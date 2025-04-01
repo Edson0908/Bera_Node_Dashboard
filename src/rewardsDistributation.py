@@ -125,6 +125,9 @@ def distribute_incentive():
             for staker in fail['failed_stakers']:
                 print(f"  - {staker['staker']}: {staker['error']}")
 
+    # 确保文件名以.json结尾
+    if not filename.endswith('.json'):
+        filename = filename + '.json'
     utils.update_json_file(filename, incentive_data)
 
 def get_boost_weight(block_number):
