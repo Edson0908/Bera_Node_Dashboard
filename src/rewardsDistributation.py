@@ -2,133 +2,121 @@ import utils
 import json
 import nodeOperation
 import time
+import os
+from datetime import datetime
+
 CONFIG = utils.load_config()
 
 def distribute_incentive():
     staker_info = CONFIG['staker_info']
-    filename = CONFIG['save_file_prefix']['incentive_data']
-    incentive_data = utils.get_file_data(filename)
+    file_prefix = CONFIG['save_file_prefix']['incentive_data']
+    data_dir = 'data/incentive'
 
-    if incentive_data is None:
-        print('没有激励数据')
-        return
-    
-    # 记录处理状态
-    processing_status = {
-        'total_blocks': len(incentive_data),
-        'processed_blocks': 0,
-        'failed_transactions': [],
-        'start_time': time.time()
-    }
+    try:
+        json_files = [f for f in os.listdir(data_dir) if f.startswith(file_prefix) and f.endswith('.json')]
 
-    for block_number, data in incentive_data.items():
-        if data.get('distributed', False):
-            processing_status['processed_blocks'] += 1
-            continue
-            
-        rewards = data.get('rewards', [])
-        if len(rewards) == 0:
-            processing_status['processed_blocks'] += 1
-            continue
-            
-        stakers_boost_weight = get_boost_weight(block_number)
-        if stakers_boost_weight is None:
-            print(f"区块 {block_number} 没有找到质押者权重数据")
-            processing_status['processed_blocks'] += 1
-            continue
+        if len(json_files) == 0:
+            print('没有激励数据')
+            return
+        # 记录处理状态
+        processing_status = {
+            'total_incentive_file': len(json_files),
+            'processed_with_success': 0,
+            'processed_with_failed': 0,
+            'failed_incentive_file': [],
+            'start_time': time.time()
+        }
         
-        total_stakers_num = len(stakers_boost_weight)
-        total_rewards_num = len(rewards)
-        reward_index = 0
-        
-        for reward in rewards:
-            if reward.get('distributed', False):
-                continue
+        for file in json_files:
+            file_path = os.path.join(data_dir, file)
+            print(f"正在处理文件: {file}")
+
+            with open(file_path, 'r', encoding='utf-8') as f:
+                incentive_data = json.load(f)
+                incentive_data = incentive_data.get('results')
+                print(json.dumps(incentive_data, indent=2))
+
+                block_number = list(incentive_data.keys())[0]
+                reward = incentive_data.get(block_number)
                 
-            index = 0
-            failed_stakers = []
-            
-            for staker, boost_weight in stakers_boost_weight.items():
-                if reward.get('transfer', {}).get(staker, None) is not None:
-                    index += 1
+                stakers_boost_weight = get_boost_weight(block_number)
+
+                if stakers_boost_weight is None:
+                    print(f"区块 {block_number} 没有找到质押者权重数据")
                     continue
 
-                if 'transfer' not in reward:
-                    reward['transfer'] = {}
-                    
-                reward_address = staker_info[staker]['reward_address']
-                amount = int(float(reward.get('amount', 0)) * float(boost_weight))
-                
-                if amount <= 0:
-                    print(f"跳过金额为0的转账: {staker}")
-                    index += 1
-                    continue
-                    
-                print(f"正在处理区块 {block_number} 的奖励，接收者: {staker}, 金额: {amount}")
-                
-                while True:
-                    try:
-                        tx_hash = nodeOperation.transfer_erc20_token(reward.get('token'), reward_address, amount)
-                        if tx_hash is not None:
-                            reward['transfer'][staker] = {
-                                'tx_hash': tx_hash,
-                                'to': reward_address,
-                                'amount': amount,
-                                'status': 'success'
-                            }
-                            index += 1
-                            break
-                        else:
-                            print(f"交易失败，将在30秒后重试...")
-                            time.sleep(30)
-                    except Exception as e:
-                        print(f"转账失败: {e}")
-                        print("将在30秒后重试...")
-                        time.sleep(30)
+                total_stakers_num = len(stakers_boost_weight)
+                index = 0
+                for staker, boost_weight in stakers_boost_weight.items():
+
+                    if reward.get('transfer', {}).get(staker, None) is not None:
+                        index += 1
                         continue
-            
-            # 记录失败情况
-            if failed_stakers:
-                processing_status['failed_transactions'].append({
-                    'block_number': block_number,
-                    'reward_index': reward_index,
-                    'failed_stakers': failed_stakers
-                })
-            
-            if index == total_stakers_num:
-                reward['distributed'] = True
-                reward_index += 1
-        
-        if reward_index == total_rewards_num:
-            data['distributed'] = True
-            print(f'区块 {block_number} 激励数据分发完成')
-            
-        processing_status['processed_blocks'] += 1
-        
-        # 打印处理进度
-        progress = (processing_status['processed_blocks'] / processing_status['total_blocks']) * 100
-        print(f"处理进度: {progress:.2f}% ({processing_status['processed_blocks']}/{processing_status['total_blocks']})")
-    
-    # 打印最终处理报告
-    end_time = time.time()
-    duration = end_time - processing_status['start_time']
-    print("\n=== 处理完成报告 ===")
-    print(f"总处理时间: {duration:.2f} 秒")
-    print(f"总区块数: {processing_status['total_blocks']}")
-    print(f"成功处理区块数: {processing_status['processed_blocks']}")
-    print(f"失败交易数: {len(processing_status['failed_transactions'])}")
-    
-    if processing_status['failed_transactions']:
-        print("\n失败交易详情:")
-        for fail in processing_status['failed_transactions']:
-            print(f"区块 {fail['block_number']} 的奖励 {fail['reward_index']}:")
-            for staker in fail['failed_stakers']:
-                print(f"  - {staker['staker']}: {staker['error']}")
 
-    # 确保文件名以.json结尾
-    if not filename.endswith('.json'):
-        filename = filename + '.json'
-    utils.update_json_file(filename, incentive_data)
+                    if 'transfer' not in reward:
+                        reward['transfer'] = {}
+                    
+                    reward_address = staker_info[staker]['reward_address']
+                    amount = int(float(reward.get('amount', 0)) * float(boost_weight))
+                    
+                    print(f"正在处理区块 {block_number} 的奖励，Token: {reward.get('token')}, 接收者: {reward_address}, 金额: {amount}")
+                    
+                    max_retry = 3
+                    while max_retry > 0:
+                        try:
+                            tx_hash = nodeOperation.transfer_erc20_token(reward.get('token'), reward_address, amount)
+                            
+                            if tx_hash is not None:
+                                reward['transfer'][staker] = {
+                                    'tx_hash': tx_hash,
+                                    'to': reward_address,
+                                    'amount': amount,
+                                }
+                                index += 1
+                                break
+                            else:
+                                print(f"交易失败，将在15秒后重试...")
+                                time.sleep(15)
+                                max_retry -= 1
+                        except Exception as e:
+                            print(f"转账失败: {e}")
+                            print("将在15秒后重试...")
+                            time.sleep(15)
+                            max_retry -= 1
+
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump({
+                        'timestamp': datetime.now().isoformat(),
+                        'results': incentive_data
+                    }, f, ensure_ascii=False, indent=2)
+
+                if index == total_stakers_num:
+                    print(f'区块 {block_number} 激励数据分发完成')
+                    new_file = f'processed_{file}'
+                    utils.rename_file(file, new_file, data_dir)
+                    processing_status['processed_with_success'] += 1
+                else:
+                    processing_status['processed_with_failed'] += 1
+                    processing_status['failed_incentive_file'].append(file)
+        
+        # 打印最终处理报告
+        end_time = time.time()
+        duration = end_time - processing_status['start_time']
+        print("\n=== 处理完成报告 ===")
+        print(f"总处理时间: {duration:.2f} 秒")
+        print(f"总文件数: {processing_status['total_incentive_file']}")
+        print(f"成功处理文件数: {processing_status['processed_with_success']}")
+        print(f"失败文件数: {len(processing_status['failed_incentive_file'])}")
+    
+        if processing_status['failed_incentive_file']:
+            print("\n失败详情:")
+            for fail in processing_status['failed_incentive_file']:
+                print(f"文件: {fail}")
+
+    except Exception as e:
+        print(f"处理incentive数据失败: {e}")
+        return
+
 
 def get_boost_weight(block_number):
     
@@ -148,7 +136,8 @@ def get_boost_weight(block_number):
         print(json.dumps(stakers_boost_weight, indent=2))
         return stakers_boost_weight
     return None
-    
+
+
 if __name__ == "__main__":
 
     distribute_incentive()
