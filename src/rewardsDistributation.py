@@ -118,6 +118,133 @@ def distribute_incentive():
         return
 
 
+def distribute_honey():
+    staker_info = CONFIG['staker_info']
+    file_prefix = CONFIG['save_file_prefix']['honey_rewards_claimed']
+    honey_transfer_data_file = CONFIG['save_file_prefix']['honey_transfer_data']
+    honey_token = CONFIG['contracts']['HONEY Token']['address']
+    data_dir = 'data/honey'
+
+    try:
+        json_files = [f for f in os.listdir(data_dir) if f.startswith(file_prefix) and f.endswith('.json')]
+
+        if len(json_files) == 0:
+            print('没有Honey Rewards数据')
+            return
+        
+        transfer_data = {}
+
+        for file in json_files:
+            file_path = os.path.join(data_dir, file)
+            print(f"正在处理文件: {file}")
+
+            with open(file_path, 'r', encoding='utf-8') as f:
+                honey_data = json.load(f)
+                honey_data = honey_data.get('results')
+
+                block_number = list(honey_data.keys())[0]
+                reward = honey_data.get(block_number)
+                
+                stakers_boost_weight = get_boost_weight(block_number)
+
+                if stakers_boost_weight is None:
+                    print(f"区块 {block_number} 没有找到质押者权重数据")
+                    continue
+
+
+                for staker, boost_weight in stakers_boost_weight.items():
+
+                    if 'transfer' not in reward:
+                        reward['transfer'] = {}
+
+                    if reward.get('transfer').get(staker, None) is not None:
+                        amount = reward.get('transfer').get(staker).get('amount', 0)
+                    else:
+                        amount = int(float(reward.get('amount', 0)) * float(boost_weight))
+                        reward['transfer'][staker] = {
+                            'to': staker_info[staker]['reward_address'],
+                            'amount': amount,
+                        }
+                    if reward.get('transfer').get(staker).get('tx_hash', None) is None:
+                        if transfer_data.get(staker, None) is not None:
+                            transfer_data[staker]['amount'] += amount
+                        else:
+                            transfer_data[staker] = {
+                                'to': staker_info[staker]['reward_address'],
+                                'amount': amount,
+                            }
+                        if transfer_data.get(staker).get('source', None) is None:
+                            transfer_data[staker]['source'] = []
+                        transfer_data[staker]['source'].append(file)
+                
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump({
+                        'timestamp': datetime.now().isoformat(),
+                        'results': honey_data
+                    }, f, ensure_ascii=False, indent=2)
+
+        for staker, data in transfer_data.items():
+            reward_address = data['to']
+            amount = data['amount']
+            print(f"正在处理 {staker} 的HONEY奖励，接收地址: {reward_address}, 金额: {amount}")
+
+            max_retry = 3
+            while max_retry > 0:
+                try:
+                    tx_hash = nodeOperation.transfer_erc20_token(honey_token, reward_address, amount)
+                    if tx_hash is not None:
+                        data['tx_hash'] = tx_hash
+
+                        for file in data['source']:
+                            file_path = os.path.join(data_dir, file)
+                            print(f"回写TxHash: {tx_hash} 到文件: {file}")
+                            with open(file_path, 'r', encoding='utf-8') as f:
+                                honey_data = json.load(f)
+                                honey_data = honey_data.get('results')
+                                block_number = list(honey_data.keys())[0]
+                                reward = honey_data.get(block_number)
+                                reward['transfer'][staker]['tx_hash'] = tx_hash
+
+                            with open(file_path, 'w', encoding='utf-8') as f:
+                                json.dump({
+                                    'timestamp': datetime.now().isoformat(),
+                                    'results': honey_data
+                                }, f, ensure_ascii=False, indent=2)
+                        break
+                    else:
+                        print(f"交易失败，将在15秒后重试...")
+                        time.sleep(15)
+                        max_retry -= 1
+                except Exception as e:
+                    print(f"转账失败: {e}")
+                    print("将在15秒后重试...")
+                    time.sleep(15)
+                    max_retry -= 1
+
+        #转账记录
+        utils.save_results_to_json(transfer_data, honey_transfer_data_file, 'honey')
+        #更新honey_rewards_claimed
+        for file in json_files:
+            file_path = os.path.join(data_dir, file)
+            with open(file_path, 'r', encoding='utf-8') as f:
+                honey_data = json.load(f)
+                honey_data = honey_data.get('results')
+                block_number = list(honey_data.keys())[0]
+                reward = honey_data.get(block_number)
+
+            not_completed = False
+            for staker, data in reward['transfer'].items():
+                if data.get('tx_hash', None) is None:
+                    not_completed = True
+                    break
+            if not not_completed:
+                new_file = f'processed_{file}'
+                utils.rename_file(file, new_file, data_dir)
+
+    except Exception as e:
+        print(f"处理honey数据失败: {e}")
+        return        
+
 def get_boost_weight(block_number):
     
     stake_snapshot = utils.get_file_data(CONFIG['save_file_prefix']['stake_snapshot'])

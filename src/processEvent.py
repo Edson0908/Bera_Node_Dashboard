@@ -1,7 +1,7 @@
 import copy
 import utils
 from requestDuneData import bgt_rewards_snapshot
-from nodeOperation import claim_honey_rewards, get_boosted_amount, get_honey_balance
+from nodeOperation import claim_honey_rewards, get_boosted_amount, get_honey_balance, get_raw_balance
 
 
 def process_active_event(blockNumber, bgtAmount):
@@ -9,6 +9,7 @@ def process_active_event(blockNumber, bgtAmount):
     config = utils.load_config()
     pubkey = config['nodeInfo']['pubkey2']
     operator_address = config['nodeInfo']['operator_address']
+    honey_address = config['contracts']['HONEY Token']['address']
 
     current_boosted = get_boosted_amount(operator_address)
 
@@ -19,15 +20,16 @@ def process_active_event(blockNumber, bgtAmount):
     snapshotData = utils.get_file_data(stake_file_prefix)
     snapshotData = snapshotData['results']
 
-    honeyData = utils.get_file_data(honey_file_prefix)
-    if honeyData is not None:
-        honeyData = honeyData['results']
-    else:
-        honeyData = {}
+    # honeyData = utils.get_file_data(honey_file_prefix)
+    # if honeyData is not None:
+    #     honeyData = honeyData['results']
+    # else:
+    honeyData = {}
 
     # claim honey rewards
 
-    honeyBalance0 = get_honey_balance(operator_address)
+    #honeyBalance0 = get_honey_balance(operator_address)
+    honeyBalance0 = get_raw_balance(operator_address, honey_address)
     try:
         receipt = claim_honey_rewards()
         if receipt is None:
@@ -36,7 +38,8 @@ def process_active_event(blockNumber, bgtAmount):
         print(f"claim honey rewards 失败: {str(e)}")
         return None
 
-    honeyBalance1 = get_honey_balance(operator_address)
+    #honeyBalance1 = get_honey_balance(operator_address)
+    honeyBalance1 = get_raw_balance(operator_address, honey_address)
     honeyClaimed = honeyBalance1 - honeyBalance0
 
     firstActive = True
@@ -82,10 +85,13 @@ def process_active_event(blockNumber, bgtAmount):
         
         index += 1
 
-    honeyData[blockNumber] = honeyClaimed
+    honeyData[blockNumber] = {
+        'token': honey_address,
+        'amount': honeyClaimed
+    }
 
     utils.save_results_to_json(snapshotData, stake_file_prefix)
-    utils.save_results_to_json(honeyData, honey_file_prefix)
+    utils.save_results_to_json(honeyData, honey_file_prefix, 'honey')
 
     print("数据已更新并保存")
     return honeyClaimed
