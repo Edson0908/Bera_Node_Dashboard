@@ -125,12 +125,14 @@ def claim_incentive(operator_address = None, pubkey = None, private_key = PRIVAT
         # 创建合约实例
         contract = web3.eth.contract(address=contract_address, abi=contract_abi)
         
-        # 构建交易参数
-        tx_params = {
+        # 获取初始nonce
+        nonce = web3.eth.get_transaction_count(operator_address)
+        
+        # 构建基础交易参数
+        base_tx_params = {
             'from': operator_address,
             'gas': 3000000,  # 设置较高的gas限制，因为包含大量数据
             'gasPrice': web3.eth.gas_price,
-            'nonce': web3.eth.get_transaction_count(operator_address)
         }
 
         # 提取rewards数据，格式化为claim结构
@@ -163,8 +165,12 @@ def claim_incentive(operator_address = None, pubkey = None, private_key = PRIVAT
                 reward_data.append(reward)
           
             if send_tx:
+                # 更新nonce
+                base_tx_params['nonce'] = nonce
+                nonce += 1
+                
                 # 构建交易
-                tx = contract.functions.claim(claims).build_transaction(tx_params)
+                tx = contract.functions.claim(claims).build_transaction(base_tx_params)
                 # 签名交易
                 signed_tx = web3.eth.account.sign_transaction(tx, private_key)
         
