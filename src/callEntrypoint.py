@@ -6,6 +6,7 @@ import os
 import time
 from processEvent import process_active_event, process_drop_event
 from nodeOperation import claim_incentive
+from rewardsDistributation import distribute_incentive, distribute_honey
 
 dotenv.load_dotenv(override=True)  # 加载 B 自己的 .env
 
@@ -44,6 +45,8 @@ def main():
         print("  python call_entrypoint.py active <blockNumber> <bgtAmount>")
         print("  python call_entrypoint.py drop <blockNumber> <bgtAmount> <account>")
         print("  python call_entrypoint.py claim_incentive")
+        print("  python call_entrypoint.py distribute_incentive")
+        print("  python call_entrypoint.py distribute_honey")
         return
 
     action = sys.argv[1]
@@ -67,10 +70,14 @@ def main():
         if len(sys.argv) != 2:
             print("Usage: python call_entrypoint.py claim_incentive")
             return
-        retry_operation(claim_incentive, operation_name="领取激励")
+        claim_incentive()
+    elif action == "distribute_incentive":
+        distribute_incentive()
+    elif action == "distribute_honey":
+        distribute_honey()
     else:
         print(f"Unknown action: {action}")
-        print("Available actions: active, drop, claim_incentive")
+        print("Available actions: active, drop, claim_incentive, distribute_incentive, distribute_honey")
 
 if __name__ == "__main__":
     main()
