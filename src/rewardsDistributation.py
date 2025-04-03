@@ -123,6 +123,8 @@ def distribute_honey():
     file_prefix = CONFIG['save_file_prefix']['honey_rewards_claimed']
     honey_transfer_data_file = CONFIG['save_file_prefix']['honey_transfer_data']
     honey_token = CONFIG['contracts']['HONEY Token']['address']
+    commission_address = CONFIG['nodeInfo']['commission_address']
+    operator_address = CONFIG['nodeInfo']['operator_address']
     data_dir = 'data/honey'
 
     try:
@@ -151,20 +153,28 @@ def distribute_honey():
                     print(f"区块 {block_number} 没有找到质押者权重数据")
                     continue
 
+                total_commission_amount = 0
 
-                for staker, boost_weight in stakers_boost_weight.items():
+                for staker, staker_value in stakers_boost_weight.items():
 
                     if 'transfer' not in reward:
                         reward['transfer'] = {}
 
                     if reward.get('transfer').get(staker, None) is not None:
                         amount = reward.get('transfer').get(staker).get('amount', 0)
+                        commission_amount = reward.get('transfer').get(staker).get('commission', 0)
                     else:
-                        amount = int(float(reward.get('amount', 0)) * float(boost_weight))
+                        amount = int(float(reward.get('amount', 0)) * float(staker_value.get('boost_weight')))
+                        commission_rate = staker_value.get('commission_rate')
+                        commission_amount = int(float(amount) * float(commission_rate))
+                        amount -= commission_amount
+                            
                         reward['transfer'][staker] = {
                             'to': staker_info[staker]['reward_address'],
                             'amount': amount,
+                            'commission': commission_amount
                         }
+                    total_commission_amount += commission_amount
                     if reward.get('transfer').get(staker).get('tx_hash', None) is None:
                         if transfer_data.get(staker, None) is not None:
                             transfer_data[staker]['amount'] += amount
@@ -176,7 +186,24 @@ def distribute_honey():
                         if transfer_data.get(staker).get('source', None) is None:
                             transfer_data[staker]['source'] = []
                         transfer_data[staker]['source'].append(file)
-                
+
+                if reward.get('transfer').get(operator_address, None) is None:
+                    reward['transfer'][operator_address] = {
+                        'to': commission_address,
+                        'amount': total_commission_amount,
+                    }
+                if reward.get('transfer').get(operator_address).get('tx_hash', None) is None:
+                    if transfer_data.get(operator_address, None) is not None:
+                        transfer_data[operator_address]['amount'] += total_commission_amount
+                    else:
+                        transfer_data[operator_address] = {
+                            'to': commission_address,
+                            'amount': total_commission_amount,
+                        }
+                    if transfer_data.get(operator_address).get('source', None) is None:
+                        transfer_data[operator_address]['source'] = []
+                    transfer_data[operator_address]['source'].append(file)
+                    
                 with open(file_path, 'w', encoding='utf-8') as f:
                     json.dump({
                         'timestamp': datetime.now().isoformat(),
@@ -257,7 +284,10 @@ def get_boost_weight(block_number):
         for record in records.get('Records', []):
             if record['Start Block'] < block_number <= record.get('End Block', 0):
                 if record.get('Boost Weight', 0) != 0:
-                    stakers_boost_weight[staker]=record.get('Boost Weight')
+                    stakers_boost_weight[staker] = {
+                        'boost_weight': record.get('Boost Weight'),
+                        'commission_rate': record.get('Commission Rate')
+                    }
                     break
     if len(stakers_boost_weight) != 0:
         print(json.dumps(stakers_boost_weight, indent=2))
