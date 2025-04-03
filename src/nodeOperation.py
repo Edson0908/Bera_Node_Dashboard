@@ -96,7 +96,7 @@ def get_raw_balance(address, token_address):
     balance = contract.functions.balanceOf(address).call()
     return balance
 
-def claim_incentive(operator_address, pubkey, private_key = PRIVATE_KEY):
+def claim_incentive(operator_address = None, pubkey = None, private_key = PRIVATE_KEY):
     
     config = utils.load_config()
     
