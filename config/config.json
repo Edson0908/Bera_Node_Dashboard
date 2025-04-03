@@ -33,7 +33,8 @@
     "honey_rewards_claimed": "honey_rewards_claimed",
     "processed_index": "processed_index",
     "incentive_data": "incentive_data",
-    "honey_transfer_data": "honey_transfer_data"
+    "honey_transfer_data": "honey_transfer_data",
+    "incentive_transfer_data": "incentive_transfer_data"
   },
   "nodeInfo": {
     "operator_address": "0x7905E5D80722702b7C1816b3c38b6A893ED809bD",
