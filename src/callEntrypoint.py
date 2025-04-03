@@ -67,7 +67,7 @@ def main():
         if len(sys.argv) != 2:
             print("Usage: python call_entrypoint.py claim_incentive")
             return
-        retry_operation(claim_incentive, operation_name="领取激励")
+        claim_incentive()
     else:
         print(f"Unknown action: {action}")
         print("Available actions: active, drop, claim_incentive")
