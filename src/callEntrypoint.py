@@ -6,7 +6,7 @@ import os
 import time
 from processEvent import process_active_event, process_drop_event
 from nodeOperation import claim_incentive
-from rewardsDistributation import distribute_incentive, distribute_honey
+from rewardsDistributation import distribute_incentive_V2, distribute_honey
 
 dotenv.load_dotenv(override=True)  # 加载 B 自己的 .env
 
@@ -72,7 +72,7 @@ def main():
             return
         claim_incentive()
     elif action == "distribute_incentive":
-        distribute_incentive()
+        distribute_incentive_V2()
     elif action == "distribute_honey":
         distribute_honey()
     else:
