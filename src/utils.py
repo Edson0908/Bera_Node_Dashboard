@@ -29,6 +29,11 @@ def load_config():
 
 def save_results_to_json(results, file_prefix, file_path = None):
     """将结果保存到JSON文件"""
+    # 检查结果是否为空
+    if results is None or results == "" or results == [] or results == {}:
+        print("结果为空，不创建文件")
+        return None
+        
     # 创建文件名（使用当前日期）
     date_str = datetime.now().strftime('%Y%m%d_%H%M%S')
     if file_path is None:

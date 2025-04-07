@@ -10,7 +10,7 @@ from rewardsDistributation import distribute_incentive_V2, distribute_honey
 
 dotenv.load_dotenv(override=True)  # 加载 B 自己的 .env
 
-def retry_operation(operation, *args, max_retries=3, retry_delay=60, operation_name="操作"):
+def retry_operation(operation, *args, max_retries=3, retry_delay=5, operation_name="操作"):
     """
     通用重试函数
     
