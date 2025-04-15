@@ -46,11 +46,13 @@
     "0x30b4220b63f76905708ba2b6e70c7496f3f5bb94": {
       "name": "SNZ",
       "commission": false,
+      "swap_address": "0x294e7cAb554dfB65095b509EFfC1FAef774b565e",
       "reward_address": "0x751F52473eb09fe51BB27fe2Da6B45F88C983782"
     },
     "0x77020360e9c08b6972a4d2564d0a7b37767dbacc": {
       "name": "SUMMER",
       "commission": true,
+      "swap_address": "0x1AE86CfE7cFd4f2561F6a579FC02D22AB0dBa455",
       "reward_address": "0xCF007e8AcE4ABC0C57F8838F61Bc3f8eCcfc3CA5"
     }
   },

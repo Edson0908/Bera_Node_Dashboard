@@ -59,7 +59,7 @@ def distribute_incentive():
                     if 'transfer' not in reward:
                         reward['transfer'] = {}
                     
-                    reward_address = staker_info[staker]['reward_address']
+                    reward_address = staker_info[staker]['swap_address']
                     amount = int(float(reward.get('amount', 0)) * float(boost_weight))
                     
                     print(f"正在处理区块 {block_number} 的奖励，Token: {reward.get('token')}, 接收者: {reward_address}, 金额: {amount}")
@@ -186,7 +186,7 @@ def distribute_incentive_V2():
                         amount -= commission_amount
                         
                         reward['transfer'][staker] = {
-                            'to': staker_info[staker]['reward_address'],
+                            'to': staker_info[staker]['swap_address'],
                             'amount': amount,
                             'commission': commission_amount
                         }
@@ -210,7 +210,7 @@ def distribute_incentive_V2():
                                 }
                         else:
                             transfer_data[staker] = {
-                                'to': staker_info[staker]['reward_address'],
+                                'to': staker_info[staker]['swap_address'],
                                 'rewards': {
                                     token: {
                                         'amount': amount,
@@ -391,7 +391,7 @@ def distribute_honey():
                         amount -= commission_amount
                             
                         reward['transfer'][staker] = {
-                            'to': staker_info[staker]['reward_address'],
+                            'to': staker_info[staker]['swap_address'],
                             'amount': amount,
                             'commission': commission_amount
                         }
@@ -401,7 +401,7 @@ def distribute_honey():
                             transfer_data[staker]['amount'] += amount
                         else:
                             transfer_data[staker] = {
-                                'to': staker_info[staker]['reward_address'],
+                                'to': staker_info[staker]['swap_address'],
                                 'amount': amount,
                             }
                         if transfer_data.get(staker).get('source', None) is None:
