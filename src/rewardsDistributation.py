@@ -127,6 +127,8 @@ def distribute_incentive():
 def distribute_incentive_V2():
     # 计算commission，合并transfer
 
+    distribute_commission = False
+
     staker_info = CONFIG['staker_info']
     file_prefix = CONFIG['save_file_prefix']['incentive_data']
     incentive_transfer_data_file = CONFIG['save_file_prefix']['incentive_transfer_data']
@@ -182,8 +184,12 @@ def distribute_incentive_V2():
                         commission_amount = reward.get('transfer').get(staker).get('commission', 0)
                     else:
                         amount = int(float(reward.get('amount', 0)) * float(staker_value.get('boost_weight')))
-                        commission_amount = int(float(amount) * float(staker_value.get('commission_rate')))
-                        amount -= commission_amount
+                        
+                        if distribute_commission:
+                            commission_amount = int(float(amount) * float(staker_value.get('commission_rate')))
+                            amount -= commission_amount
+                        else:
+                            commission_amount = 0
                         
                         reward['transfer'][staker] = {
                             'to': staker_info[staker]['swap_address'],
@@ -222,38 +228,40 @@ def distribute_incentive_V2():
                             transfer_data[staker]['rewards'][token]['source'] = []
                         transfer_data[staker]['rewards'][token]['source'].append(file)
                 
-                if reward.get('transfer').get(operator_address, None) is None:
-                    reward['transfer'][operator_address] = {
-                        'to': commission_address,
-                        'amount': total_commission_amount,
-                    }   
-                if reward.get('transfer').get(operator_address).get('tx_hash', None) is None:
-                    if transfer_data.get(operator_address, None) is not None:
-                        if transfer_data[operator_address].get('rewards', None) is not None:
-                            if transfer_data[operator_address]['rewards'].get(token, None) is not None:
-                                transfer_data[operator_address]['rewards'][token]['amount'] += total_commission_amount
+                if distribute_commission:
+
+                    if reward.get('transfer').get(operator_address, None) is None:
+                        reward['transfer'][operator_address] = {
+                            'to': commission_address,
+                            'amount': total_commission_amount,
+                        }   
+                    if reward.get('transfer').get(operator_address).get('tx_hash', None) is None:
+                        if transfer_data.get(operator_address, None) is not None:
+                            if transfer_data[operator_address].get('rewards', None) is not None:
+                                if transfer_data[operator_address]['rewards'].get(token, None) is not None:
+                                    transfer_data[operator_address]['rewards'][token]['amount'] += total_commission_amount
+                                else:
+                                    transfer_data[operator_address]['rewards'][token] = {
+                                        'amount': total_commission_amount,
+                                    }
                             else:
-                                transfer_data[operator_address]['rewards'][token] = {
-                                    'amount': total_commission_amount,
+                                transfer_data[operator_address]['rewards'] = {
+                                    token: {
+                                        'amount': total_commission_amount,
+                                    }
                                 }
                         else:
-                            transfer_data[operator_address]['rewards'] = {
-                                token: {
-                                    'amount': total_commission_amount,
+                            transfer_data[operator_address] = {
+                                'to': commission_address,
+                                'rewards': {
+                                    token: {
+                                        'amount': total_commission_amount,
+                                    }
                                 }
                             }
-                    else:
-                        transfer_data[operator_address] = {
-                            'to': commission_address,
-                            'rewards': {
-                                token: {
-                                    'amount': total_commission_amount,
-                                }
-                            }
-                        }
-                    if transfer_data.get(operator_address).get('rewards').get(token).get('source', None) is None:
-                        transfer_data[operator_address]['rewards'][token]['source'] = []
-                    transfer_data[operator_address]['rewards'][token]['source'].append(file)
+                        if transfer_data.get(operator_address).get('rewards').get(token).get('source', None) is None:
+                            transfer_data[operator_address]['rewards'][token]['source'] = []
+                        transfer_data[operator_address]['rewards'][token]['source'].append(file)
                 
                 with open(file_path, 'w', encoding='utf-8') as f:
                     json.dump({
@@ -340,6 +348,9 @@ def distribute_incentive_V2():
 
 
 def distribute_honey():
+
+    distribute_commission = False
+
     staker_info = CONFIG['staker_info']
     file_prefix = CONFIG['save_file_prefix']['honey_rewards_claimed']
     honey_transfer_data_file = CONFIG['save_file_prefix']['honey_transfer_data']
@@ -387,8 +398,11 @@ def distribute_honey():
                     else:
                         amount = int(float(reward.get('amount', 0)) * float(staker_value.get('boost_weight')))
                         commission_rate = staker_value.get('commission_rate')
-                        commission_amount = int(float(amount) * float(commission_rate))
-                        amount -= commission_amount
+                        if distribute_commission:
+                            commission_amount = int(float(amount) * float(commission_rate))
+                            amount -= commission_amount
+                        else:
+                            commission_amount = 0
                             
                         reward['transfer'][staker] = {
                             'to': staker_info[staker]['swap_address'],
@@ -408,22 +422,23 @@ def distribute_honey():
                             transfer_data[staker]['source'] = []
                         transfer_data[staker]['source'].append(file)
 
-                if reward.get('transfer').get(operator_address, None) is None:
-                    reward['transfer'][operator_address] = {
-                        'to': commission_address,
-                        'amount': total_commission_amount,
-                    }
-                if reward.get('transfer').get(operator_address).get('tx_hash', None) is None:
-                    if transfer_data.get(operator_address, None) is not None:
-                        transfer_data[operator_address]['amount'] += total_commission_amount
-                    else:
-                        transfer_data[operator_address] = {
+                if distribute_commission:
+                    if reward.get('transfer').get(operator_address, None) is None:
+                        reward['transfer'][operator_address] = {
                             'to': commission_address,
                             'amount': total_commission_amount,
                         }
-                    if transfer_data.get(operator_address).get('source', None) is None:
-                        transfer_data[operator_address]['source'] = []
-                    transfer_data[operator_address]['source'].append(file)
+                    if reward.get('transfer').get(operator_address).get('tx_hash', None) is None:
+                        if transfer_data.get(operator_address, None) is not None:
+                            transfer_data[operator_address]['amount'] += total_commission_amount
+                        else:
+                            transfer_data[operator_address] = {
+                                'to': commission_address,
+                                'amount': total_commission_amount,
+                            }
+                        if transfer_data.get(operator_address).get('source', None) is None:
+                            transfer_data[operator_address]['source'] = []
+                        transfer_data[operator_address]['source'].append(file)
                     
                 with open(file_path, 'w', encoding='utf-8') as f:
                     json.dump({
