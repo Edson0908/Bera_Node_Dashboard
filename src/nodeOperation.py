@@ -96,7 +96,7 @@ def get_raw_balance(address, token_address):
     balance = contract.functions.balanceOf(address).call()
     return balance
 
-def claim_incentive(operator_address = None, pubkey = None, private_key = PRIVATE_KEY):
+def claim_incentive(operator_address = None, pubkeys = None, private_key = PRIVATE_KEY):
     
     config = utils.load_config()
     
@@ -114,100 +114,102 @@ def claim_incentive(operator_address = None, pubkey = None, private_key = PRIVAT
     if operator_address is None:
         operator_address = config['nodeInfo']['operator_address']
     operator_address = Web3.to_checksum_address(operator_address)
-    if pubkey is None:
-        pubkey = config['nodeInfo'].get('pubkey1')
+
+    #暂时将所有boost pubkey硬编码到config文件
+    if pubkeys is None:
+        pubkeys = config['boost_pubkeys']
     try:
-
-        proof_data = fetch_proof(operator_address, pubkey)
-        if proof_data is None:
-            print("未找到奖励数据")
-            return None
-        # 创建合约实例
-        contract = web3.eth.contract(address=contract_address, abi=contract_abi)
-        
-        # 获取初始nonce
-        nonce = web3.eth.get_transaction_count(operator_address)
-        
-        # 构建基础交易参数
-        base_tx_params = {
-            'from': operator_address,
-            'gas': 3000000,  # 设置较高的gas限制，因为包含大量数据
-            'gasPrice': web3.eth.gas_price,
-        }
-
-        # 提取rewards数据，格式化为claim结构
-        receipts = []
-        claims = []
-        init_batch = proof_data[0].get('available_at')
-
-        send_tx = False
-        index = 0
-        reward_data = []
-        for reward in proof_data:
+        for pubkey in pubkeys:
+            proof_data = fetch_proof(operator_address, pubkey)
+            if proof_data is None:
+                print("未找到奖励数据")
+                return None
+            # 创建合约实例
+            contract = web3.eth.contract(address=contract_address, abi=contract_abi)
             
-            index += 1
+            # 获取初始nonce
+            nonce = web3.eth.get_transaction_count(operator_address)
+            
+            # 构建基础交易参数
+            base_tx_params = {
+                'from': operator_address,
+                'gas': 3000000,  # 设置较高的gas限制，因为包含大量数据
+                'gasPrice': web3.eth.gas_price,
+            }
 
-            claim = (
-                Web3.to_bytes(hexstr=reward.get('dist_id')),  # identifier (bytes32)
-                Web3.to_checksum_address(reward.get('recipient')),  # account (address) - 确保使用校验和地址
-                int(reward.get('amount')),                     # amount (uint256)
-                [Web3.to_bytes(hexstr=proof) for proof in reward.get('merkle_proof', [])]  # merkleProof (bytes32[])
-            )
+            # 提取rewards数据，格式化为claim结构
+            receipts = []
+            claims = []
+            init_batch = proof_data[0].get('available_at')
 
-            current_batch = reward.get('available_at')
+            send_tx = False
+            index = 0
+            reward_data = []
+            for reward in proof_data:
+                
+                index += 1
 
-            if current_batch != init_batch:
-                init_batch = current_batch
-                send_tx = True
-            if index == len(proof_data):
-                send_tx = True
+                claim = (
+                    Web3.to_bytes(hexstr=reward.get('dist_id')),  # identifier (bytes32)
+                    Web3.to_checksum_address(reward.get('recipient')),  # account (address) - 确保使用校验和地址
+                    int(reward.get('amount')),                     # amount (uint256)
+                    [Web3.to_bytes(hexstr=proof) for proof in reward.get('merkle_proof', [])]  # merkleProof (bytes32[])
+                )
+
+                current_batch = reward.get('available_at')
+
+                if current_batch != init_batch:
+                    init_batch = current_batch
+                    send_tx = True
+                if index == len(proof_data):
+                    send_tx = True
+                    claims.append(claim)
+                    reward_data.append(reward)
+            
+                if send_tx:
+                    # 更新nonce
+                    base_tx_params['nonce'] = nonce
+                    nonce += 1
+                    
+                    # 构建交易
+                    tx = contract.functions.claim(claims).build_transaction(base_tx_params)
+                    # 签名交易
+                    signed_tx = web3.eth.account.sign_transaction(tx, private_key)
+            
+                    # 发送交易
+                    # 处理不同版本的web3.py
+                    try:
+                        # 新版本web3.py
+                        tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+                    except AttributeError:
+                        # 旧版本web3.py
+                        tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
+                
+                    print(f"交易已发送，交易哈希: {tx_hash.hex()}")
+                    print("等待交易确认中...")
+            
+                    # 等待交易确认
+                    receipt = web3.eth.wait_for_transaction_receipt(tx_hash, timeout=300)  # 300秒超时
+            
+                    if receipt['status'] == 1:
+                        print(f"交易确认成功！区块号: {receipt['blockNumber']}")
+                        print(f"Gas使用量: {receipt['gasUsed']}")
+                        print("奖励已成功领取")
+                        for item in reward_data:
+                            incentive_data = {receipt['blockNumber']: item}
+                            utils.save_results_to_json(incentive_data, filename, 'incentive')
+                            time.sleep(1)
+                    else:
+                        print("交易执行失败，请检查合约状态")   
+                    receipts.append(receipt)
+
+                    # 重置数组和状态
+                    claims = []
+                    reward_data = []
+                    send_tx = False
+    
                 claims.append(claim)
                 reward_data.append(reward)
-          
-            if send_tx:
-                # 更新nonce
-                base_tx_params['nonce'] = nonce
-                nonce += 1
-                
-                # 构建交易
-                tx = contract.functions.claim(claims).build_transaction(base_tx_params)
-                # 签名交易
-                signed_tx = web3.eth.account.sign_transaction(tx, private_key)
-        
-                # 发送交易
-                # 处理不同版本的web3.py
-                try:
-                    # 新版本web3.py
-                    tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
-                except AttributeError:
-                    # 旧版本web3.py
-                    tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
-            
-                print(f"交易已发送，交易哈希: {tx_hash.hex()}")
-                print("等待交易确认中...")
-        
-                # 等待交易确认
-                receipt = web3.eth.wait_for_transaction_receipt(tx_hash, timeout=300)  # 300秒超时
-        
-                if receipt['status'] == 1:
-                    print(f"交易确认成功！区块号: {receipt['blockNumber']}")
-                    print(f"Gas使用量: {receipt['gasUsed']}")
-                    print("奖励已成功领取")
-                    for item in reward_data:
-                        incentive_data = {receipt['blockNumber']: item}
-                        utils.save_results_to_json(incentive_data, filename, 'incentive')
-                        time.sleep(1)
-                else:
-                    print("交易执行失败，请检查合约状态")   
-                receipts.append(receipt)
-
-                # 重置数组和状态
-                claims = []
-                reward_data = []
-                send_tx = False
- 
-            claims.append(claim)
-            reward_data.append(reward)
             
     except Exception as e:
         print(f"发送交易时出错: {str(e)}")
@@ -238,7 +240,6 @@ def fetch_proof(account=None, validator=None):
     if not validator:
         validator = config['nodeInfo'].get('pubkey1')
     
-    # 构建API URL
     base_url = "https://hub.berachain.com/api/portfolio/proofs/"
     params = {"account": account}
     params["validator"] = validator
@@ -346,4 +347,5 @@ if __name__ == "__main__":
     #get_boosted_amount('0x')
     #claim_incentive_test()
     # 测试加载钱包
+    fetch_proof()
     pass

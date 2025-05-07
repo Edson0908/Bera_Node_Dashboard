@@ -36,6 +36,10 @@
     "honey_transfer_data": "honey_transfer_data",
     "incentive_transfer_data": "incentive_transfer_data"
   },
+  "boost_pubkeys": [
+    "0x96652bba2f2f3b6b4fcfdfe9847f6a5604965d0ebac37c1f0c3774da0866140ab69734feec0eb0761f8e08d809c9e12b",
+    "0xa15875a9e554e446e5fcd463245f4d7bd6863b1a5f51d33ac828d06f9185c5705f1d0a442b52df142ee74f300a01551f"
+  ],
   "nodeInfo": {
     "operator_address": "0x7905E5D80722702b7C1816b3c38b6A893ED809bD",
     "pubkey1": "0x96652bba2f2f3b6b4fcfdfe9847f6a5604965d0ebac37c1f0c3774da0866140ab69734feec0eb0761f8e08d809c9e12b",
