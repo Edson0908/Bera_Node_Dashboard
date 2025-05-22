@@ -240,14 +240,15 @@ def fetch_proof(account=None, validator=None):
     if not validator:
         validator = config['nodeInfo'].get('pubkey1')
     
-    base_url = "https://hub.berachain.com/api/portfolio/proofs/"
-    params = {"account": account}
-    params["validator"] = validator
+    #base_url = "https://hub.berachain.com/api/portfolio/proofs/"
+    base_url = f"https://api-claim.berachain.com/api/v1/wallets/{account}/proofs/validator/{validator}"
+    # params = {"account": account}
+    # params["validator"] = validator
     
     try:
         print(f"正在获取账户 {account} 的proof数据...")
         # 发送GET请求
-        response = requests.get(base_url, params=params)
+        response = requests.get(base_url)
         
         # 检查响应状态码
         if response.status_code == 200:
@@ -347,5 +348,6 @@ if __name__ == "__main__":
     #get_boosted_amount('0x')
     #claim_incentive_test()
     # 测试加载钱包
-    fetch_proof()
+
+
     pass
