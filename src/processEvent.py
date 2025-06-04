@@ -125,7 +125,7 @@ def process_drop_event(blockNumber, bgtAmount, account):
             value['Records'][-1]['Staker BGT Rewards'] = 0
             value['Records'][-1]['Commission'] = 0
             value['Records'][-1]['BGT Rewards'] = 0
-            value['Records'][-1]['Staker Boosted'] -= bgtAmount
+            value['Records'][-1]['Staker Boosted'] = value['Records'][-2]['Staker Boosted'] - bgtAmount
             value['Records'][-1]['Total Boosted'] = current_boosted
             value['Records'][-1]['Boost Weight'] = value['Records'][-1]['Staker Boosted'] / value['Records'][-1]['Total Boosted']
         else:
